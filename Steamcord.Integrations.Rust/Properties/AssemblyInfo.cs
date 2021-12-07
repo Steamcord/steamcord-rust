@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Oxide.Ext.Steamcord")]
+[assembly: AssemblyTitle("Steamcord.Integrations.Rust")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Oxide.Ext.Steamcord")]
+[assembly: AssemblyProduct("Steamcord.Integrations.Rust")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("E1C7EA85-59D6-48BB-83C3-C71AA79C82DC")]
+[assembly: Guid("CDE444EE-D3BB-46DD-91B8-316D5D8C52F1")]
 
 // Version information for an assembly consists of the following four values:
 //

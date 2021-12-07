@@ -2,4 +2,5 @@ bin/
 obj/
 /packages/
 riderModule.iml
-/_ReSharper.Caches/
+/_ReSharper.Caches/DS_Store
+.DS_Store
