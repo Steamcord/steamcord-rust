@@ -1,9 +1,8 @@
 ﻿// ReSharper disable once CheckNamespace
 
-extern alias NewtonsoftJson;
 using System;
 using System.Collections.Generic;
-using NewtonsoftJson::Newtonsoft.Json;
+using Newtonsoft.Json;
 using Oxide.Core.Libraries;
 using Oxide.Plugins.SteamcordHttp;
 using Oxide.Plugins.SteamcordService;
@@ -44,6 +43,35 @@ namespace Oxide.Plugins
             Steam,
             SteamGroupMember
         }
+
+        #region HTTP
+
+        private class HttpRequestQueue : IHttpRequestQueue
+        {
+            public void PushRequest(string uri, Action<int, string> callback, string body = null,
+                Dictionary<string, string> headers = null,
+                HttpRequestType type = HttpRequestType.Get)
+            {
+                _instance.webrequest.Enqueue(uri, body,
+                    (status, responseBody) => callback?.Invoke(status, responseBody), _instance, GetRequestMethod(type),
+                    headers);
+            }
+
+            private RequestMethod GetRequestMethod(HttpRequestType requestType)
+            {
+                switch (requestType)
+                {
+                    case HttpRequestType.Get:
+                        return RequestMethod.GET;
+                    case HttpRequestType.Post:
+                        return RequestMethod.POST;
+                    default:
+                        throw new ArgumentException();
+                }
+            }
+        }
+
+        #endregion
 
         #region Config
 
@@ -94,35 +122,6 @@ namespace Oxide.Plugins
             {
                 public string Token { get; set; }
                 public string BaseUri { get; set; }
-            }
-        }
-
-        #endregion
-        
-        #region HTTP
-        
-        private class HttpRequestQueue : IHttpRequestQueue
-        {
-            public void PushRequest(string uri, Action<int, string> callback, string body = null,
-                Dictionary<string, string> headers = null,
-                HttpRequestType type = HttpRequestType.Get)
-            {
-                _instance.webrequest.Enqueue(uri, body,
-                    (status, responseBody) => callback?.Invoke(status, responseBody), _instance, GetRequestMethod(type),
-                    headers);
-            }
-
-            private RequestMethod GetRequestMethod(HttpRequestType requestType)
-            {
-                switch (requestType)
-                {
-                    case HttpRequestType.Get:
-                        return RequestMethod.GET;
-                    case HttpRequestType.Post:
-                        return RequestMethod.POST;
-                    default:
-                        throw new ArgumentException();
-                }
             }
         }
 
