@@ -68,51 +68,6 @@
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>References\UnityEngine.dll</HintPath>
         </Reference>
-        <Reference Include="UnityEngine.AccessibilityModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.AccessibilityModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.AIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.AIModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.AndroidJNIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.AndroidJNIModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.AnimationModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.ARModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.ARModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.AssetBundleModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.AudioModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.ClothModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.ClothModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.ClusterInputModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.ClusterInputModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.ClusterRendererModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.ClusterRendererModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.CoreModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.CrashReportingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.CrashReportingModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.DirectorModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.DirectorModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.DSPGraphModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.DSPGraphModule.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.GameCenterModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\UnityEngine.GameCenterModule.dll</HintPath>
-        </Reference>
         <Reference Include="UnityEngine.GridModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>References\UnityEngine.GridModule.dll</HintPath>
         </Reference>
