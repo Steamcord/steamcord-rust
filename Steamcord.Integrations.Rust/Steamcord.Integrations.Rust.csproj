@@ -33,48 +33,6 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="Facepunch.BurstCloth, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.BurstCloth.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Console, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Console.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.GoogleSheets, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.GoogleSheets.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Input, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Input.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Network, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Network.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Raknet, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Raknet.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Rcon, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Rcon.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Skeleton, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Skeleton.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Sqlite, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Sqlite.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.SteamNetworking, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.SteamNetworking.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Steamworks.Posix, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Steamworks.Posix.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.System, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.System.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.Unity, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.Unity.dll</HintPath>
-        </Reference>
-        <Reference Include="Facepunch.UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>References\Facepunch.UnityEngine.dll</HintPath>
-        </Reference>
         <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
             <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
             <Private>True</Private>
