@@ -34,16 +34,7 @@ namespace Oxide.Plugins
 
             _timer = timer.Every(60, () => _steamcordApiClient.GetPlayers());
         }
-
-        private enum Reward
-        {
-            Discord,
-            DiscordGuildMember,
-            DiscordGuildBooster,
-            Steam,
-            SteamGroupMember
-        }
-
+        
         #region HTTP
 
         private class HttpRequestQueue : IHttpRequestQueue
@@ -94,9 +85,9 @@ namespace Oxide.Plugins
 
         private class Configuration
         {
-            public ApiOptions Api { get; set; } = new ApiOptions();
+            public ApiOptions Api { get; set; }
 
-            public Dictionary<string, string> Rewards { get; set; }
+            public Dictionary<RewardType, string> Rewards { get; set; }
 
             public static Configuration CreateDefault()
             {
@@ -107,13 +98,13 @@ namespace Oxide.Plugins
                         Token = "<your api token>",
                         BaseUri = "https://steamcord.io/api"
                     },
-                    Rewards = new Dictionary<string, string>
+                    Rewards = new Dictionary<RewardType, string>
                     {
-                        [nameof(Reward.Discord)] = "steamcord.discord",
-                        [nameof(Reward.DiscordGuildMember)] = "steamcord.discordguildmember",
-                        [nameof(Reward.DiscordGuildBooster)] = "steamcord.discordguildbooster",
-                        [nameof(Reward.Steam)] = "steamcord.steam",
-                        [nameof(Reward.SteamGroupMember)] = "steamcord.steamgroupmember"
+                        [RewardType.Discord] = "steamcord.discord",
+                        [RewardType.DiscordGuildMember] = "steamcord.discordguildmember",
+                        [RewardType.DiscordGuildBooster] = "steamcord.discordguildbooster",
+                        [RewardType.Steam] = "steamcord.steam",
+                        [RewardType.SteamGroupMember] = "steamcord.steamgroupmember"
                     }
                 };
             }
@@ -128,6 +119,7 @@ namespace Oxide.Plugins
         #endregion
     }
 }
+
 namespace Oxide.Plugins.SteamcordApi
 {
     #region Player
