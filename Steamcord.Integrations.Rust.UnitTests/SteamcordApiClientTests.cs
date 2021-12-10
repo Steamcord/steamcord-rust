@@ -68,7 +68,8 @@ namespace Steamcord.Integrations.Rust.UnitTests
         [Test]
         public void PushSteamIdsOntoQueue_WhenSteamIdsIsEmpty_ThrowsArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => _steamcordApiClient.PushSteamIdsOntoQueue(Array.Empty<string>()));
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                _steamcordApiClient.PushSteamIdsOntoQueue(Array.Empty<string>()));
         }
     }
 }

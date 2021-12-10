@@ -66,7 +66,7 @@ namespace Oxide.Plugins
                     case HttpRequestType.Post:
                         return RequestMethod.POST;
                     default:
-                        throw new ArgumentException();
+                        throw new ArgumentOutOfRangeException(nameof(requestType), requestType, null);
                 }
             }
         }
