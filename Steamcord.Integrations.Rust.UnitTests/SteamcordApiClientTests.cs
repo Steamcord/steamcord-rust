@@ -2,8 +2,8 @@
 using System.Linq;
 using NSubstitute;
 using NUnit.Framework;
+using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
-using Oxide.Plugins.SteamcordService;
 
 namespace Steamcord.Integrations.Rust.UnitTests
 {

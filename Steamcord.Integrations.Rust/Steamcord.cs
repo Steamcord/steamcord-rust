@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Oxide.Core.Libraries;
+using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
-using Oxide.Plugins.SteamcordService;
 
 namespace Oxide.Plugins
 {
@@ -128,23 +128,7 @@ namespace Oxide.Plugins
         #endregion
     }
 }
-
-namespace Oxide.Plugins.SteamcordHttp
-{
-    public enum HttpRequestType
-    {
-        Get,
-        Post
-    }
-
-    public interface IHttpRequestQueue
-    {
-        void PushRequest(string uri, Action<int, string> callback = null, string body = null,
-            Dictionary<string, string> headers = null, HttpRequestType type = HttpRequestType.Get);
-    }
-}
-
-namespace Oxide.Plugins.SteamcordService
+namespace Oxide.Plugins.SteamcordApi
 {
     #region Player
 
@@ -241,5 +225,20 @@ namespace Oxide.Plugins.SteamcordService
         {
             PlayersReceived?.Invoke(this, e);
         }
+    }
+}
+
+namespace Oxide.Plugins.SteamcordHttp
+{
+    public enum HttpRequestType
+    {
+        Get,
+        Post
+    }
+
+    public interface IHttpRequestQueue
+    {
+        void PushRequest(string uri, Action<int, string> callback = null, string body = null,
+            Dictionary<string, string> headers = null, HttpRequestType type = HttpRequestType.Get);
     }
 }
