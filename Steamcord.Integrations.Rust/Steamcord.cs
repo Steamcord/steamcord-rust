@@ -75,7 +75,7 @@ namespace Oxide.Plugins
 
         protected override void LoadDefaultConfig()
         {
-            _config = new Configuration();
+            _config = Configuration.CreateDefault();
         }
 
         protected override void SaveConfig()
