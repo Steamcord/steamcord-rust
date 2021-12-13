@@ -2,10 +2,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Oxide.Core.Libraries;
 using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
+using Oxide.Plugins.SteamcordRewards;
 
 namespace Oxide.Plugins
 {
@@ -34,7 +37,7 @@ namespace Oxide.Plugins
 
             _timer = timer.Every(60, () => _steamcordApiClient.GetPlayers());
         }
-        
+
         #region HTTP
 
         private class HttpRequestQueue : IHttpRequestQueue
@@ -87,7 +90,7 @@ namespace Oxide.Plugins
         {
             public ApiOptions Api { get; set; }
 
-            public Dictionary<RewardType, string> Rewards { get; set; }
+            public IEnumerable<Reward> Rewards { get; set; }
 
             public static Configuration CreateDefault()
             {
@@ -98,13 +101,14 @@ namespace Oxide.Plugins
                         Token = "<your api token>",
                         BaseUri = "https://steamcord.io/api"
                     },
-                    Rewards = new Dictionary<RewardType, string>
+                    Rewards = new[]
                     {
-                        [RewardType.Discord] = "steamcord.discord",
-                        [RewardType.DiscordGuildMember] = "steamcord.discordguildmember",
-                        [RewardType.DiscordGuildBooster] = "steamcord.discordguildbooster",
-                        [RewardType.Steam] = "steamcord.steam",
-                        [RewardType.SteamGroupMember] = "steamcord.steamgroupmember"
+                        new Reward(new[]
+                        {
+                            Requirement.DiscordGuildMember,
+                            Requirement.SteamGroupMember
+                        }, "steamcord.discord_steam_member"),
+                        new Reward(Requirement.DiscordGuildBooster, "steamcord.discord_booster")
                     }
                 };
             }
@@ -278,9 +282,11 @@ namespace Oxide.Plugins.SteamcordRewards
 
     public class RewardsService : IRewardsService
     {
-        public bool IsEligible(Player player, Reward reward) =>
-            reward.Requirements.All(requirement => IsEligible(player, requirement));
-        
+        public bool IsEligible(Player player, Reward reward)
+        {
+            return reward.Requirements.All(requirement => IsEligible(player, requirement));
+        }
+
         private static bool IsEligible(Player player, Requirement requirement)
         {
             switch (requirement)
