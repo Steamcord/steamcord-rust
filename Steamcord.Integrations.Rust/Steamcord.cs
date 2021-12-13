@@ -234,3 +234,68 @@ namespace Oxide.Plugins.SteamcordHttp
             Dictionary<string, string> headers = null, HttpRequestType type = HttpRequestType.Get);
     }
 }
+
+namespace Oxide.Plugins.SteamcordRewards
+{
+    public enum Requirement
+    {
+        Discord,
+        DiscordGuildMember,
+        DiscordGuildBooster,
+        Steam,
+        SteamGroupMember
+    }
+
+    public class Reward
+    {
+        public Reward(Requirement requirement, string groupName)
+        {
+            Requirements = new[] {requirement};
+            GroupName = groupName;
+        }
+
+        public Reward(IEnumerable<Requirement> requirements, string groupName)
+        {
+            Requirements = requirements;
+            GroupName = groupName;
+        }
+
+        [JsonConstructor]
+        private Reward()
+        {
+        }
+
+        [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+        public IEnumerable<Requirement> Requirements { get; set; }
+
+        public string GroupName { get; set; }
+    }
+
+    public interface IRewardsService
+    {
+        bool IsEligible(Player player, Reward reward);
+    }
+
+    public class RewardsService : IRewardsService
+    {
+        public bool IsEligible(Player player, Reward reward) =>
+            reward.Requirements.All(requirement => IsEligible(player, requirement));
+        
+        private static bool IsEligible(Player player, Requirement requirement)
+        {
+            switch (requirement)
+            {
+                case Requirement.Discord:
+                    return player.DiscordAccount != null;
+                case Requirement.Steam:
+                    return player.SteamAccount != null;
+                case Requirement.DiscordGuildMember:
+                case Requirement.DiscordGuildBooster:
+                case Requirement.SteamGroupMember:
+                    throw new NotImplementedException();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(requirement), requirement, null);
+            }
+        }
+    }
+}
