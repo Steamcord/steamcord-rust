@@ -339,9 +339,9 @@ namespace Oxide.Plugins.SteamcordRewards
             switch (requirement)
             {
                 case Requirement.Discord:
-                    return player.DiscordAccount != null;
+                    return player.DiscordAccounts.Any();
                 case Requirement.Steam:
-                    return player.SteamAccount != null;
+                    return player.SteamAccounts.Any();
                 case Requirement.DiscordGuildMember:
                 case Requirement.DiscordGuildBooster:
                 case Requirement.SteamGroupMember:
