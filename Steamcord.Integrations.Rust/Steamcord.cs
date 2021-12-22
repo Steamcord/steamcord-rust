@@ -238,7 +238,7 @@ namespace Oxide.Plugins.SteamcordApi
                 if (status != 200) return;
 
                 var players = JsonConvert.DeserializeObject<Player[]>(body);
-                OnPlayersReceived(new PlayerReceivedEventArgs(players.SingleOrDefault(), isCommand, steamId));
+                OnPlayerReceived(new PlayerReceivedEventArgs(players.SingleOrDefault(), isCommand, steamId));
             }, headers: _headers);
         }
 
@@ -249,7 +249,7 @@ namespace Oxide.Plugins.SteamcordApi
             _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", headers: _headers, type: HttpRequestType.Post);
         }
 
-        private void OnPlayersReceived(PlayerReceivedEventArgs e)
+        private void OnPlayerReceived(PlayerReceivedEventArgs e)
         {
             PlayerReceived?.Invoke(this, e);
         }
