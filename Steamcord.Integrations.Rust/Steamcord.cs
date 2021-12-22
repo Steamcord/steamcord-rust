@@ -121,6 +121,33 @@ namespace Oxide.Plugins
         }
 
         #endregion
+
+        #region Lang
+
+        protected override void LoadDefaultMessages()
+        {
+            _langService.RegisterMessages();
+        }
+
+        private class LangService : ILangService
+        {
+            public void RegisterMessages()
+            {
+                _instance.lang.RegisterMessages(new Dictionary<string, string>
+                {
+                    [Message.Error] = "Something went wrong, please try again later.",
+                    [Message.ClaimNoRewards] = "We couldn't find a matching player, is your Steam account linked?",
+                    [Message.ClaimRewards] = "Thank you for linking your accounts!"
+                }, _instance);
+            }
+
+            public void MessagePlayer(IPlayer player, string key)
+            {
+                player.Message(_instance.lang.GetMessage(key, _instance, player.Id));
+            }
+        }
+
+        #endregion
     }
 }
 
@@ -236,6 +263,22 @@ namespace Oxide.Plugins.SteamcordHttp
     {
         void PushRequest(string uri, Action<int, string> callback = null, string body = null,
             Dictionary<string, string> headers = null, HttpRequestType type = HttpRequestType.Get);
+    }
+}
+
+namespace Oxide.Plugins.SteamcordLang
+{
+    public static class Message
+    {
+        public const string Error = nameof(Error);
+        public const string ClaimNoRewards = nameof(ClaimNoRewards);
+        public const string ClaimRewards = nameof(ClaimRewards);
+    }
+
+    public interface ILangService
+    {
+        void RegisterMessages();
+        void MessagePlayer(IPlayer player, string key);
     }
 }
 
