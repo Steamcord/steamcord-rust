@@ -158,8 +158,8 @@ namespace Oxide.Plugins.SteamcordApi
     public class Player
     {
         public int PlayerId { get; set; }
-        public DiscordAccount DiscordAccount { get; set; }
-        public SteamAccount SteamAccount { get; set; }
+        public IEnumerable<DiscordAccount> DiscordAccounts { get; set; }
+        public IEnumerable<SteamAccount> SteamAccounts { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
     }
@@ -177,28 +177,32 @@ namespace Oxide.Plugins.SteamcordApi
 
     #endregion
 
-    public class PlayersReceivedEventArgs : EventArgs
+    public class PlayerReceivedEventArgs : EventArgs
     {
-        public PlayersReceivedEventArgs(IEnumerable<Player> players)
+        public PlayerReceivedEventArgs(Player player, bool isCommandCallback, string querySteamId)
         {
-            Players = players;
+            Player = player;
+            IsCommandCallback = isCommandCallback;
+            QuerySteamId = querySteamId;
         }
 
-        public IEnumerable<Player> Players { get; set; }
+        public bool IsCommandCallback { get; set; }
+        public Player Player { get; set; }
+        public string QuerySteamId { get; set; }
     }
 
     public interface ISteamcordApiClient
     {
         /// <summary>
-        ///     Invoked when the Steamcord API responds to <c>GetPlayers</c>.
+        ///     Invoked when the Steamcord API responds to <c>GetPlayerBySteamId</c>.
         /// </summary>
-        event EventHandler<PlayersReceivedEventArgs> PlayersReceived;
+        event EventHandler<PlayerReceivedEventArgs> PlayerReceived;
 
         /// <summary>
-        ///     Gets players from the Steamcord API and raises the <c>PlayersReceived</c> event.
+        ///     Gets the player from the Steamcord API and raises the <c>PlayerReceived</c> event.
         ///     See <see href="https://steamcord.io/docs/api-reference/players-resource.html#get-all-players">the docs</see>.
         /// </summary>
-        void GetPlayers();
+        void GetPlayerBySteamId(string steamId, bool isCommand = false);
 
         /// <summary>
         ///     See <see href="https://steamcord.io/docs/api-reference/steam-group-queue.html#push-a-steam-id">the docs</see>.
@@ -224,16 +228,16 @@ namespace Oxide.Plugins.SteamcordApi
             _httpRequestQueue = httpRequestQueue;
         }
 
-        public event EventHandler<PlayersReceivedEventArgs> PlayersReceived;
+        public event EventHandler<PlayerReceivedEventArgs> PlayerReceived;
 
-        public void GetPlayers()
+        public void GetPlayerBySteamId(string steamId, bool isCommand = false)
         {
-            _httpRequestQueue.PushRequest($"{_baseUri}/players", (status, body) =>
+            _httpRequestQueue.PushRequest($"{_baseUri}/players?steamId={steamId}", (status, body) =>
             {
                 if (status != 200) return;
 
                 var players = JsonConvert.DeserializeObject<Player[]>(body);
-                OnPlayersReceived(new PlayersReceivedEventArgs(players));
+                OnPlayersReceived(new PlayerReceivedEventArgs(players.SingleOrDefault(), isCommand, steamId));
             }, headers: _headers);
         }
 
@@ -244,9 +248,9 @@ namespace Oxide.Plugins.SteamcordApi
             _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", headers: _headers, type: HttpRequestType.Post);
         }
 
-        private void OnPlayersReceived(PlayersReceivedEventArgs e)
+        private void OnPlayersReceived(PlayerReceivedEventArgs e)
         {
-            PlayersReceived?.Invoke(this, e);
+            PlayerReceived?.Invoke(this, e);
         }
     }
 }

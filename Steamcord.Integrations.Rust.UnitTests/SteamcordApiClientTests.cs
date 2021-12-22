@@ -22,14 +22,14 @@ namespace Steamcord.Integrations.Rust.UnitTests
         private const string BaseUri = "baseUri";
 
         private const string ResponseBody =
-            "[{\"playerId\":1,\"discordAccount\":{\"discordId\":\"304797177538936832\",\"username\":\"Jacob#3500\"},\"steamAccount\":{\"steamId\":\"76561198117837537\"},\"createdDate\":\"2021-10-31 17:34:46.896816\",\"modifiedDate\":\"2021-10-31 17:45:49.823991\"}]";
+            "[{\"playerId\":1,\"discordAccounts\":[{\"discordId\":\"304797177538936832\",\"username\":\"Jacob#3500\"}],\"steamAccounts\":[{\"steamId\":\"76561198117837537\"}],\"createdDate\":\"2021-10-31 17:34:46.896816\",\"modifiedDate\":\"2021-10-31 17:45:49.823991\"}]";
 
         private IHttpRequestQueue _httpRequestQueue;
         private ISteamcordApiClient _steamcordApiClient;
 
         [TestCase(200)]
         [TestCase(403)]
-        public void GetPlayers_WhenApiReturnsOk_RaisesPlayersReceivedEvent(int status)
+        public void GetPlayerBySteamId_WhenApiReturnsOk_RaisesPlayerReceivedEvent(int status)
         {
             _httpRequestQueue.WhenForAnyArgs(x => x.PushRequest(default))
                 .Do(x =>
@@ -39,14 +39,14 @@ namespace Steamcord.Integrations.Rust.UnitTests
                 });
 
             var wasRaised = false;
-            _steamcordApiClient.PlayersReceived += (sender, e) => wasRaised = true;
-            _steamcordApiClient.GetPlayers();
+            _steamcordApiClient.PlayerReceived += (sender, e) => wasRaised = true;
+            _steamcordApiClient.GetPlayerBySteamId("76561198117837537");
 
             Assert.AreEqual(status == 200, wasRaised);
         }
 
         [Test]
-        public void GetPlayers_WhenApiReturnsOnePlayer_RaisesPlayersReceivedEventWithPlayer()
+        public void GetPlayers_WhenApiReturnsOnePlayer_RaisesPlayerReceivedEventWithPlayer()
         {
             _httpRequestQueue.WhenForAnyArgs(x => x.PushRequest(default))
                 .Do(x =>
@@ -55,14 +55,15 @@ namespace Steamcord.Integrations.Rust.UnitTests
                     callback?.Invoke(200, ResponseBody);
                 });
 
-            _steamcordApiClient.PlayersReceived += (sender, e) =>
+            _steamcordApiClient.PlayerReceived += (sender, e) =>
             {
-                Assert.IsNotEmpty(e.Players);
-                var player = e.Players.First();
-                Assert.AreEqual(player.PlayerId, 1);
-                Assert.AreEqual(player.DiscordAccount.DiscordId, "304797177538936832");
-                Assert.AreEqual(player.SteamAccount.SteamId, "76561198117837537");
+                Assert.IsNotNull(e.Player);
+                Assert.AreEqual(e.Player.PlayerId, 1);
+                Assert.AreEqual(e.Player.DiscordAccounts.Single().DiscordId, "304797177538936832");
+                Assert.AreEqual(e.Player.SteamAccounts.Single().SteamId, "76561198117837537");
             };
+
+            _steamcordApiClient.GetPlayerBySteamId("76561198117837537");
         }
 
         [Test]
