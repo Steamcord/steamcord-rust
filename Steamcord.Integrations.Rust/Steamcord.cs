@@ -89,7 +89,7 @@ namespace Oxide.Plugins
         private class Configuration
         {
             public ApiOptions Api { get; set; }
-
+            public string ChatCommand { get; set; }
             public IEnumerable<Reward> Rewards { get; set; }
 
             public static Configuration CreateDefault()
@@ -101,6 +101,7 @@ namespace Oxide.Plugins
                         Token = "<your api token>",
                         BaseUri = "https://steamcord.io/api"
                     },
+                    ChatCommand = "claim",
                     Rewards = new[]
                     {
                         new Reward(new[]
