@@ -30,14 +30,7 @@ namespace Oxide.Plugins
             _instance = this;
             _langService = new LangService();
         }
-
-        ~Steamcord()
-        {
-            // Oxide/uMod requirement
-            _instance = null;
-        }
-
-
+        
         private void Init()
         {
             _rewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
@@ -57,6 +50,12 @@ namespace Oxide.Plugins
                     if (players.Connected.Any())
                         _steamcordApiClient.PushSteamIdsOntoQueue(players.Connected.Select(player => player.Id));
                 });
+        }
+        
+        private void Unload()
+        {
+            // Oxide/uMod requirement
+            _instance = null;
         }
 
         private bool ClaimCommand(IPlayer player)
