@@ -49,8 +49,7 @@ namespace Oxide.Plugins
                 });
         }
 
-        [HookMethod(nameof(ClaimCommand))]
-        public bool ClaimCommand(IPlayer player)
+        private bool ClaimCommand(IPlayer player)
         {
             _steamcordApiClient.GetPlayerBySteamId(player.Id,
                 steamcordPlayer => { _rewardsService.ProvisionRewards(player, steamcordPlayer); }, (status, _) =>
