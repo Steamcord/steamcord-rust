@@ -82,7 +82,7 @@ namespace Oxide.Plugins
                     headers);
             }
 
-            private RequestMethod GetRequestMethod(HttpRequestType requestType)
+            private static RequestMethod GetRequestMethod(HttpRequestType requestType)
             {
                 switch (requestType)
                 {
@@ -233,6 +233,9 @@ namespace Oxide.Plugins.SteamcordApi
         ///     Gets the player from the Steamcord API and invokes one of the provided callbacks.
         ///     See <see href="https://steamcord.io/docs/api-reference/players-resource.html#get-all-players">the docs</see>.
         /// </summary>
+        /// <param name="steamId"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
         void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
             Action<int, string> error = null);
 
@@ -280,7 +283,8 @@ namespace Oxide.Plugins.SteamcordApi
         {
             if (!steamIds.Any()) throw new ArgumentException();
 
-            _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", headers: _headers, type: HttpRequestType.Post);
+            _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", body: JsonConvert.SerializeObject(steamIds),
+                headers: _headers, type: HttpRequestType.Post);
         }
     }
 }
@@ -390,7 +394,7 @@ namespace Oxide.Plugins.SteamcordRewards
 
             var givenReward = false;
             foreach (var reward in _rewards)
-                if (IsEligible(steamcordPlayer, reward, player.Id))
+                if (IsEligibleForAll(steamcordPlayer, reward, player.Id))
                 {
                     _permissionsService.AddToGroup(player, reward.Group);
                     givenReward = true;
@@ -403,7 +407,7 @@ namespace Oxide.Plugins.SteamcordRewards
             _langService.Message(player, givenReward ? Message.ClaimRewards : Message.ClaimNoRewards);
         }
 
-        private bool IsEligible(SteamcordPlayer player, Reward reward, string steamId)
+        private static bool IsEligibleForAll(SteamcordPlayer player, Reward reward, string steamId)
         {
             return reward.Requirements.All(requirement => IsEligible(player, requirement, steamId));
         }
