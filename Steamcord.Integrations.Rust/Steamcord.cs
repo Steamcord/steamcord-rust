@@ -7,7 +7,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Oxide.Core.Libraries;
 using Oxide.Core.Libraries.Covalence;
-using Oxide.Core.Plugins;
 using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
 using Oxide.Plugins.SteamcordLang;
@@ -40,6 +39,12 @@ namespace Oxide.Plugins
                 new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue());
 
             AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
+
+            foreach (var group in _config.Rewards.Select(reward => reward.Group))
+            {
+                if (permission.CreateGroup(group, group, 0))
+                    Puts($"Created Oxide group \"{group}\".");
+            }
 
             timer.Every(5 * 60,
                 () =>
@@ -147,8 +152,8 @@ namespace Oxide.Plugins
                         {
                             Requirement.DiscordGuildMember,
                             Requirement.SteamGroupMember
-                        }, "steamcord.discord_steam_member"),
-                        new Reward(Requirement.DiscordGuildBooster, "steamcord.discord_booster")
+                        }, "discord-steam-member"),
+                        new Reward(Requirement.DiscordGuildBooster, "discord-booster")
                     }
                 };
             }
