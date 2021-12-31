@@ -6,8 +6,12 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Oxide.Core.Libraries;
+using Oxide.Core.Libraries.Covalence;
+using Oxide.Core.Plugins;
 using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
+using Oxide.Plugins.SteamcordLang;
+using Oxide.Plugins.SteamcordPermissions;
 using Oxide.Plugins.SteamcordRewards;
 
 namespace Oxide.Plugins
@@ -16,26 +20,45 @@ namespace Oxide.Plugins
     public class Steamcord : CovalencePlugin
     {
         private static Steamcord _instance;
+        private readonly ILangService _langService;
+
         private Configuration _config;
+        private IRewardsService _rewardsService;
         private ISteamcordApiClient _steamcordApiClient;
-        private Timer _timer;
 
         public Steamcord()
         {
             _instance = this;
+            _langService = new LangService();
         }
 
         private void Init()
         {
+            _rewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
+
             _steamcordApiClient =
                 new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue());
 
-            _steamcordApiClient.PlayersReceived += (sender, e) =>
-            {
-                // provision rewards
-            };
+            AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
 
-            _timer = timer.Every(60, () => _steamcordApiClient.GetPlayers());
+            timer.Every(5 * 60,
+                () =>
+                {
+                    if (players.Connected.Any())
+                        _steamcordApiClient.PushSteamIdsOntoQueue(players.Connected.Select(player => player.Id));
+                });
+        }
+
+        [HookMethod(nameof(ClaimCommand))]
+        public bool ClaimCommand(IPlayer player)
+        {
+            _steamcordApiClient.GetPlayerBySteamId(player.Id,
+                steamcordPlayer => { _rewardsService.ProvisionRewards(player, steamcordPlayer); }, (status, _) =>
+                {
+                    // error
+                });
+
+            return true;
         }
 
         #region HTTP
@@ -62,6 +85,23 @@ namespace Oxide.Plugins
                     default:
                         throw new ArgumentOutOfRangeException(nameof(requestType), requestType, null);
                 }
+            }
+        }
+
+        #endregion
+
+        #region Permissions
+
+        public class PermissionsService : IPermissionsService
+        {
+            public void AddToGroup(IPlayer player, string group)
+            {
+                _instance.permission.AddUserGroup(player.Id, group);
+            }
+
+            public void RemoveFromGroup(IPlayer player, string group)
+            {
+                _instance.permission.RemoveUserGroup(player.Id, group);
             }
         }
 
@@ -136,13 +176,14 @@ namespace Oxide.Plugins
             {
                 _instance.lang.RegisterMessages(new Dictionary<string, string>
                 {
-                    [Message.Error] = "Something went wrong, please try again later.",
-                    [Message.ClaimNoRewards] = "We couldn't find a matching player, is your Steam account linked?",
-                    [Message.ClaimRewards] = "Thank you for linking your accounts!"
+                    [SteamcordLang.Message.Error] = "Something went wrong, please try again later.",
+                    [SteamcordLang.Message.ClaimNoRewards] =
+                        "We couldn't find a matching player, is your Steam account linked?",
+                    [SteamcordLang.Message.ClaimRewards] = "Thank you for linking your accounts!"
                 }, _instance);
             }
 
-            public void MessagePlayer(IPlayer player, string key)
+            public void Message(IPlayer player, string key)
             {
                 player.Message(_instance.lang.GetMessage(key, _instance, player.Id));
             }
@@ -161,55 +202,36 @@ namespace Oxide.Plugins.SteamcordApi
         public int PlayerId { get; set; }
         public IEnumerable<DiscordAccount> DiscordAccounts { get; set; }
         public IEnumerable<SteamAccount> SteamAccounts { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
     }
 
     public class DiscordAccount
     {
         public string DiscordId { get; set; }
-        public string Username { get; set; }
+        public bool IsGuildMember { get; set; }
+        public bool IsGuildBooster { get; set; }
     }
 
     public class SteamAccount
     {
         public string SteamId { get; set; }
+        public bool IsSteamGroupMember { get; set; }
     }
 
     #endregion
 
-    public class PlayerReceivedEventArgs : EventArgs
-    {
-        public PlayerReceivedEventArgs(Player player, bool isCommandCallback, string querySteamId)
-        {
-            Player = player;
-            IsCommandCallback = isCommandCallback;
-            QuerySteamId = querySteamId;
-        }
-
-        public bool IsCommandCallback { get; set; }
-        public Player Player { get; set; }
-        public string QuerySteamId { get; set; }
-    }
-
     public interface ISteamcordApiClient
     {
         /// <summary>
-        ///     Invoked when the Steamcord API responds to <c>GetPlayerBySteamId</c>.
-        /// </summary>
-        event EventHandler<PlayerReceivedEventArgs> PlayerReceived;
-
-        /// <summary>
-        ///     Gets the player from the Steamcord API and raises the <c>PlayerReceived</c> event.
+        ///     Gets the player from the Steamcord API and invokes one of the provided callbacks.
         ///     See <see href="https://steamcord.io/docs/api-reference/players-resource.html#get-all-players">the docs</see>.
         /// </summary>
-        void GetPlayerBySteamId(string steamId, bool isCommand = false);
+        void GetPlayerBySteamId(string steamId, Action<Player> success = null, Action<int, string> error = null);
 
         /// <summary>
         ///     See <see href="https://steamcord.io/docs/api-reference/steam-group-queue.html#push-a-steam-id">the docs</see>.
         /// </summary>
         /// <param name="steamIds"></param>
-        void PushSteamIdsOntoQueue(string[] steamIds);
+        void PushSteamIdsOntoQueue(IEnumerable<string> steamIds);
     }
 
     public class SteamcordApiClient : ISteamcordApiClient
@@ -229,29 +251,27 @@ namespace Oxide.Plugins.SteamcordApi
             _httpRequestQueue = httpRequestQueue;
         }
 
-        public event EventHandler<PlayerReceivedEventArgs> PlayerReceived;
-
-        public void GetPlayerBySteamId(string steamId, bool isCommand = false)
+        public void GetPlayerBySteamId(string steamId, Action<Player> success = null,
+            Action<int, string> error = null)
         {
             _httpRequestQueue.PushRequest($"{_baseUri}/players?steamId={steamId}", (status, body) =>
             {
-                if (status != 200) return;
+                if (status != 200)
+                {
+                    error?.Invoke(status, body);
+                    return;
+                }
 
                 var players = JsonConvert.DeserializeObject<Player[]>(body);
-                OnPlayerReceived(new PlayerReceivedEventArgs(players.SingleOrDefault(), isCommand, steamId));
+                success?.Invoke(players.SingleOrDefault());
             }, headers: _headers);
         }
 
-        public void PushSteamIdsOntoQueue(string[] steamIds)
+        public void PushSteamIdsOntoQueue(IEnumerable<string> steamIds)
         {
-            if (steamIds.Length == 0) throw new ArgumentException();
+            if (!steamIds.Any()) throw new ArgumentException();
 
             _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", headers: _headers, type: HttpRequestType.Post);
-        }
-
-        private void OnPlayerReceived(PlayerReceivedEventArgs e)
-        {
-            PlayerReceived?.Invoke(this, e);
         }
     }
 }
@@ -283,7 +303,16 @@ namespace Oxide.Plugins.SteamcordLang
     public interface ILangService
     {
         void RegisterMessages();
-        void MessagePlayer(IPlayer player, string key);
+        void Message(IPlayer player, string key);
+    }
+}
+
+namespace Oxide.Plugins.SteamcordPermissions
+{
+    public interface IPermissionsService
+    {
+        void AddToGroup(IPlayer player, string group);
+        void RemoveFromGroup(IPlayer player, string group);
     }
 }
 
@@ -300,16 +329,16 @@ namespace Oxide.Plugins.SteamcordRewards
 
     public class Reward
     {
-        public Reward(Requirement requirement, string groupName)
+        public Reward(Requirement requirement, string group)
         {
             Requirements = new[] {requirement};
-            GroupName = groupName;
+            Group = group;
         }
 
-        public Reward(IEnumerable<Requirement> requirements, string groupName)
+        public Reward(IEnumerable<Requirement> requirements, string group)
         {
             Requirements = requirements;
-            GroupName = groupName;
+            Group = group;
         }
 
         [JsonConstructor]
@@ -320,22 +349,57 @@ namespace Oxide.Plugins.SteamcordRewards
         [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
         public IEnumerable<Requirement> Requirements { get; set; }
 
-        public string GroupName { get; set; }
+        public string Group { get; set; }
     }
 
     public interface IRewardsService
     {
-        bool IsEligible(Player player, Reward reward);
+        void ProvisionRewards(IPlayer player, Player steamcordPlayer);
     }
 
     public class RewardsService : IRewardsService
     {
-        public bool IsEligible(Player player, Reward reward)
+        private readonly ILangService _langService;
+        private readonly IPermissionsService _permissionsService;
+        private readonly IEnumerable<Reward> _rewards;
+
+        public RewardsService(ILangService langService, IPermissionsService permissionsService,
+            IEnumerable<Reward> rewards)
         {
-            return reward.Requirements.All(requirement => IsEligible(player, requirement));
+            _langService = langService;
+            _permissionsService = permissionsService;
+            _rewards = rewards;
         }
 
-        private static bool IsEligible(Player player, Requirement requirement)
+        public void ProvisionRewards(IPlayer player, Player steamcordPlayer)
+        {
+            if (steamcordPlayer == null)
+            {
+                _langService.Message(player, Message.ClaimNoRewards);
+                return;
+            }
+
+            var givenReward = false;
+            foreach (var reward in _rewards)
+                if (IsEligible(steamcordPlayer, reward, player.Id))
+                {
+                    _permissionsService.AddToGroup(player, reward.Group);
+                    givenReward = true;
+                }
+                else
+                {
+                    _permissionsService.RemoveFromGroup(player, reward.Group);
+                }
+
+            _langService.Message(player, givenReward ? Message.ClaimRewards : Message.ClaimNoRewards);
+        }
+
+        private bool IsEligible(Player player, Reward reward, string steamId)
+        {
+            return reward.Requirements.All(requirement => IsEligible(player, requirement, steamId));
+        }
+
+        private static bool IsEligible(Player player, Requirement requirement, string steamId)
         {
             switch (requirement)
             {
@@ -344,9 +408,12 @@ namespace Oxide.Plugins.SteamcordRewards
                 case Requirement.Steam:
                     return player.SteamAccounts.Any();
                 case Requirement.DiscordGuildMember:
+                    return player.DiscordAccounts.Any(discordAccount => discordAccount.IsGuildMember);
                 case Requirement.DiscordGuildBooster:
+                    return player.DiscordAccounts.Any(discordAccount => discordAccount.IsGuildBooster);
                 case Requirement.SteamGroupMember:
-                    throw new NotImplementedException();
+                    return player.SteamAccounts.Any(steamAccount =>
+                        steamAccount.SteamId == steamId && steamAccount.IsSteamGroupMember);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(requirement), requirement, null);
             }
