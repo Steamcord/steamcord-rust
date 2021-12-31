@@ -30,7 +30,7 @@ namespace Oxide.Plugins
             _instance = this;
             _langService = new LangService();
         }
-        
+
         private void Init()
         {
             _rewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
@@ -41,8 +41,8 @@ namespace Oxide.Plugins
             AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
 
             foreach (var group in _config.Rewards.Select(reward => reward.Group))
-                if (permission.CreateGroup(@group, @group, 0))
-                    Puts($"Created Oxide group \"{@group}\".");
+                if (permission.CreateGroup(group, group, 0))
+                    Puts($"Created Oxide group \"{group}\".");
 
             timer.Every(5 * 60,
                 () =>
@@ -51,7 +51,7 @@ namespace Oxide.Plugins
                         _steamcordApiClient.PushSteamIdsOntoQueue(players.Connected.Select(player => player.Id));
                 });
         }
-        
+
         private void Unload()
         {
             // Oxide/uMod requirement
@@ -205,7 +205,7 @@ namespace Oxide.Plugins.SteamcordApi
 {
     #region Player
 
-    public class Player
+    public class SteamcordPlayer
     {
         public int PlayerId { get; set; }
         public IEnumerable<DiscordAccount> DiscordAccounts { get; set; }
@@ -233,7 +233,8 @@ namespace Oxide.Plugins.SteamcordApi
         ///     Gets the player from the Steamcord API and invokes one of the provided callbacks.
         ///     See <see href="https://steamcord.io/docs/api-reference/players-resource.html#get-all-players">the docs</see>.
         /// </summary>
-        void GetPlayerBySteamId(string steamId, Action<Player> success = null, Action<int, string> error = null);
+        void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
+            Action<int, string> error = null);
 
         /// <summary>
         ///     See <see href="https://steamcord.io/docs/api-reference/steam-group-queue.html#push-a-steam-id">the docs</see>.
@@ -259,7 +260,7 @@ namespace Oxide.Plugins.SteamcordApi
             _httpRequestQueue = httpRequestQueue;
         }
 
-        public void GetPlayerBySteamId(string steamId, Action<Player> success = null,
+        public void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
             Action<int, string> error = null)
         {
             _httpRequestQueue.PushRequest($"{_baseUri}/players?steamId={steamId}", (status, body) =>
@@ -270,7 +271,7 @@ namespace Oxide.Plugins.SteamcordApi
                     return;
                 }
 
-                var players = JsonConvert.DeserializeObject<Player[]>(body);
+                var players = JsonConvert.DeserializeObject<SteamcordPlayer[]>(body);
                 success?.Invoke(players.SingleOrDefault());
             }, headers: _headers);
         }
@@ -362,7 +363,7 @@ namespace Oxide.Plugins.SteamcordRewards
 
     public interface IRewardsService
     {
-        void ProvisionRewards(IPlayer player, Player steamcordPlayer);
+        void ProvisionRewards(IPlayer player, SteamcordPlayer steamcordPlayer);
     }
 
     public class RewardsService : IRewardsService
@@ -379,7 +380,7 @@ namespace Oxide.Plugins.SteamcordRewards
             _rewards = rewards;
         }
 
-        public void ProvisionRewards(IPlayer player, Player steamcordPlayer)
+        public void ProvisionRewards(IPlayer player, SteamcordPlayer steamcordPlayer)
         {
             if (steamcordPlayer == null)
             {
@@ -402,12 +403,12 @@ namespace Oxide.Plugins.SteamcordRewards
             _langService.Message(player, givenReward ? Message.ClaimRewards : Message.ClaimNoRewards);
         }
 
-        private bool IsEligible(Player player, Reward reward, string steamId)
+        private bool IsEligible(SteamcordPlayer player, Reward reward, string steamId)
         {
             return reward.Requirements.All(requirement => IsEligible(player, requirement, steamId));
         }
 
-        private static bool IsEligible(Player player, Requirement requirement, string steamId)
+        private static bool IsEligible(SteamcordPlayer player, Requirement requirement, string steamId)
         {
             switch (requirement)
             {

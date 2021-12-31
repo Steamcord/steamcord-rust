@@ -53,7 +53,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         [Test]
         public void ProvisionRewards_WhenPlayerIsEligibleForOneReward_AddsToGroupsAndMessagesPlayer()
         {
-            var scPlayer = new Player
+            var scPlayer = new SteamcordPlayer
             {
                 PlayerId = 1,
                 DiscordAccounts = new[]
@@ -85,7 +85,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         [Test]
         public void ProvisionRewards_WhenPlayerIsEligibleForAllRewards_AddsToGroupsAndMessagesPlayer()
         {
-            var scPlayer = new Player
+            var scPlayer = new SteamcordPlayer
             {
                 PlayerId = 1,
                 DiscordAccounts = new[]
@@ -118,7 +118,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         [Test]
         public void ProvisionRewards_WhenPlayerIsNotEligible_MessagesPlayer()
         {
-            var scPlayer = new Player
+            var scPlayer = new SteamcordPlayer
             {
                 PlayerId = 1,
                 DiscordAccounts = new[]
