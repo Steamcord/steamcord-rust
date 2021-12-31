@@ -1,4 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
+﻿// Copyright 2021 Steamcord LLC
 
 using System;
 using System.Collections.Generic;

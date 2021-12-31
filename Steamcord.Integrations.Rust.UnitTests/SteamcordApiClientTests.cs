@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright 2021 Steamcord LLC
+
+using System;
 using System.Linq;
 using NSubstitute;
 using NUnit.Framework;

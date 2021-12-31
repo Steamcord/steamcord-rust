@@ -1,3 +1,5 @@
+// Copyright 2021 Steamcord LLC
+
 using NSubstitute;
 using NUnit.Framework;
 using Oxide.Core.Libraries.Covalence;
