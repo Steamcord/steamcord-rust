@@ -91,7 +91,7 @@ namespace Oxide.Plugins
 
         #region Permissions
 
-        public class PermissionsService : IPermissionsService
+        private class PermissionsService : IPermissionsService
         {
             public void AddToGroup(IPlayer player, string group)
             {
