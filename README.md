@@ -4,4 +4,4 @@
 
 Steamcord integration for Rust ([OxideMod/uMod](https://umod.org))
 
-See the docs [here](https://steamcord.io/docs/rust-integration/).
+See [the docs](https://steamcord.io/docs/integrations/rust.html).
