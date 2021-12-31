@@ -31,6 +31,13 @@ namespace Oxide.Plugins
             _langService = new LangService();
         }
 
+        ~Steamcord()
+        {
+            // Oxide/uMod requirement
+            _instance = null;
+        }
+
+
         private void Init()
         {
             _rewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
@@ -41,10 +48,8 @@ namespace Oxide.Plugins
             AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
 
             foreach (var group in _config.Rewards.Select(reward => reward.Group))
-            {
-                if (permission.CreateGroup(group, group, 0))
-                    Puts($"Created Oxide group \"{group}\".");
-            }
+                if (permission.CreateGroup(@group, @group, 0))
+                    Puts($"Created Oxide group \"{@group}\".");
 
             timer.Every(5 * 60,
                 () =>
