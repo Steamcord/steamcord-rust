@@ -29,7 +29,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
 
         [TestCase(200)]
         [TestCase(403)]
-        public void GetPlayerBySteamId_WhenApiReturnsOk_RaisesPlayerReceivedEvent(int status)
+        public void GetPlayerBySteamId_WhenApiReturnsOk_InvokesSuccessCallback(int status)
         {
             _httpRequestQueue.WhenForAnyArgs(x => x.PushRequest(default))
                 .Do(x =>
@@ -38,11 +38,13 @@ namespace Steamcord.Integrations.Rust.UnitTests
                     callback?.Invoke(status, ResponseBody);
                 });
 
-            var wasRaised = false;
-            _steamcordApiClient.PlayerReceived += (sender, e) => wasRaised = true;
-            _steamcordApiClient.GetPlayerBySteamId("76561198117837537");
+            var successCalled = false;
+            var errorCalled = false;
+            _steamcordApiClient.GetPlayerBySteamId("76561198117837537", player => successCalled = true,
+                (responseStatus, body) => errorCalled = true);
 
-            Assert.AreEqual(status == 200, wasRaised);
+            Assert.AreEqual(status == 200, successCalled);
+            Assert.AreEqual(status != 200, errorCalled);
         }
 
         [Test]
@@ -55,15 +57,13 @@ namespace Steamcord.Integrations.Rust.UnitTests
                     callback?.Invoke(200, ResponseBody);
                 });
 
-            _steamcordApiClient.PlayerReceived += (sender, e) =>
+            _steamcordApiClient.GetPlayerBySteamId("76561198117837537", player =>
             {
-                Assert.IsNotNull(e.Player);
-                Assert.AreEqual(e.Player.PlayerId, 1);
-                Assert.AreEqual(e.Player.DiscordAccounts.Single().DiscordId, "304797177538936832");
-                Assert.AreEqual(e.Player.SteamAccounts.Single().SteamId, "76561198117837537");
-            };
-
-            _steamcordApiClient.GetPlayerBySteamId("76561198117837537");
+                Assert.IsNotNull(player);
+                Assert.AreEqual(player.PlayerId, 1);
+                Assert.AreEqual(player.DiscordAccounts.Single().DiscordId, "304797177538936832");
+                Assert.AreEqual(player.SteamAccounts.Single().SteamId, "76561198117837537");
+            });
         }
 
         [Test]
