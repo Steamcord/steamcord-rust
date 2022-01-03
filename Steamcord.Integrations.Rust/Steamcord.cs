@@ -63,10 +63,8 @@ namespace Oxide.Plugins
         private bool ClaimCommand(IPlayer player)
         {
             _steamcordApiClient.GetPlayerBySteamId(player.Id,
-                steamcordPlayer => { _rewardsService.ProvisionRewards(player, steamcordPlayer); }, (status, _) =>
-                {
-                    // error
-                });
+                steamcordPlayer => { _rewardsService.ProvisionRewards(player, steamcordPlayer); },
+                (status, _) => { _langService.Message(player, Message.Error); });
 
             return true;
         }
