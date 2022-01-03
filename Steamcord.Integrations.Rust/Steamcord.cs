@@ -200,14 +200,14 @@ namespace Oxide.Plugins
                 {
                     [SteamcordLang.Message.Error] = "Something went wrong, please try again later.",
                     [SteamcordLang.Message.ClaimNoRewards] =
-                        "We couldn't find a matching player, is your Steam account linked?",
+                        "We couldn't find a matching player, link your accounts at [#6200ee]steamcord.link/your-slug[/#].",
                     [SteamcordLang.Message.ClaimRewards] = "Thank you for linking your accounts!"
                 }, _instance);
             }
 
             public void Message(IPlayer player, string key)
             {
-                player.Message(_instance.lang.GetMessage(key, _instance, player.Id));
+                player.Message(_instance.covalence.FormatText(_instance.lang.GetMessage(key, _instance, player.Id)));
             }
         }
 
