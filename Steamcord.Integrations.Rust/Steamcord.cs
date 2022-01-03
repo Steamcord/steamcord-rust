@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Oxide.Core;
 using Oxide.Core.Libraries;
 using Oxide.Core.Libraries.Covalence;
 using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
 using Oxide.Plugins.SteamcordLang;
+using Oxide.Plugins.SteamcordLogging;
 using Oxide.Plugins.SteamcordPermissions;
 using Oxide.Plugins.SteamcordRewards;
 
@@ -36,7 +38,7 @@ namespace Oxide.Plugins
             _rewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
 
             _steamcordApiClient =
-                new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue());
+                new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(), new Logger());
 
             AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
 
@@ -110,6 +112,18 @@ namespace Oxide.Plugins
             public void RemoveFromGroup(IPlayer player, string group)
             {
                 _instance.permission.RemoveUserGroup(player.Id, group);
+            }
+        }
+
+        #endregion
+
+        #region Logging
+
+        private class Logger : ILogger
+        {
+            public void LogError(string message)
+            {
+                Interface.Oxide.LogError(message);
             }
         }
 
@@ -251,8 +265,9 @@ namespace Oxide.Plugins.SteamcordApi
         private readonly string _baseUri;
         private readonly Dictionary<string, string> _headers;
         private readonly IHttpRequestQueue _httpRequestQueue;
+        private readonly ILogger _logger;
 
-        public SteamcordApiClient(string apiToken, string baseUri, IHttpRequestQueue httpRequestQueue)
+        public SteamcordApiClient(string apiToken, string baseUri, IHttpRequestQueue httpRequestQueue, ILogger logger)
         {
             _headers = new Dictionary<string, string>
             {
@@ -261,6 +276,7 @@ namespace Oxide.Plugins.SteamcordApi
 
             _baseUri = baseUri;
             _httpRequestQueue = httpRequestQueue;
+            _logger = logger;
         }
 
         public void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
@@ -271,6 +287,7 @@ namespace Oxide.Plugins.SteamcordApi
                 if (status != 200)
                 {
                     error?.Invoke(status, body);
+                    _logger.LogError(GetErrorMessage(status));
                     return;
                 }
 
@@ -285,6 +302,21 @@ namespace Oxide.Plugins.SteamcordApi
 
             _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", body: JsonConvert.SerializeObject(steamIds),
                 headers: _headers, type: HttpRequestType.Post);
+        }
+
+        private string GetErrorMessage(int status)
+        {
+            switch (status)
+            {
+                case 401:
+                    return "Received an unauthorized response, check your API token.";
+                case 403:
+                    return "Received a forbidden response, check your subscription status.";
+                case 429:
+                    return "Received a rate limit response.";
+                default:
+                    return $"Received unexpected status {status}.";
+            }
         }
     }
 }
@@ -317,6 +349,14 @@ namespace Oxide.Plugins.SteamcordLang
     {
         void RegisterMessages();
         void Message(IPlayer player, string key);
+    }
+}
+
+namespace Oxide.Plugins.SteamcordLogging
+{
+    public interface ILogger
+    {
+        void LogError(string message);
     }
 }
 
