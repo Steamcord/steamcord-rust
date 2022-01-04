@@ -6,6 +6,7 @@ using NSubstitute;
 using NUnit.Framework;
 using Oxide.Plugins.SteamcordApi;
 using Oxide.Plugins.SteamcordHttp;
+using Oxide.Plugins.SteamcordLogging;
 
 namespace Steamcord.Integrations.Rust.UnitTests
 {
@@ -16,8 +17,9 @@ namespace Steamcord.Integrations.Rust.UnitTests
         public void SetUp()
         {
             _httpRequestQueue = Substitute.For<IHttpRequestQueue>();
+            _logger = Substitute.For<ILogger>();
 
-            _steamcordApiClient = new SteamcordApiClient(ApiToken, BaseUri, _httpRequestQueue);
+            _steamcordApiClient = new SteamcordApiClient(ApiToken, BaseUri, _httpRequestQueue, _logger);
         }
 
         private const string ApiToken = "apiToken";
@@ -27,10 +29,14 @@ namespace Steamcord.Integrations.Rust.UnitTests
             "[{\"playerId\":1,\"discordAccounts\":[{\"discordId\":\"304797177538936832\",\"username\":\"Jacob#3500\"}],\"steamAccounts\":[{\"steamId\":\"76561198117837537\"}],\"createdDate\":\"2021-10-31 17:34:46.896816\",\"modifiedDate\":\"2021-10-31 17:45:49.823991\"}]";
 
         private IHttpRequestQueue _httpRequestQueue;
+        private ILogger _logger;
         private ISteamcordApiClient _steamcordApiClient;
 
         [TestCase(200)]
+        [TestCase(401)]
         [TestCase(403)]
+        [TestCase(429)]
+        [TestCase(500)]
         public void GetPlayerBySteamId_WhenApiReturnsOk_InvokesSuccessCallback(int status)
         {
             _httpRequestQueue.WhenForAnyArgs(x => x.PushRequest(default))
@@ -47,6 +53,11 @@ namespace Steamcord.Integrations.Rust.UnitTests
 
             Assert.AreEqual(status == 200, successCalled);
             Assert.AreEqual(status != 200, errorCalled);
+
+            if (status != 200)
+            {
+                _logger.ReceivedWithAnyArgs().LogError(default);
+            }
         }
 
         [Test]
