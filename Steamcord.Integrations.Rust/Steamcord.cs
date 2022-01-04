@@ -41,18 +41,20 @@ namespace Oxide.Plugins
             ApiClient =
                 new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(), new Logger());
 
-            AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
+            if (_config.ChatCommandEnabled)
+                AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
 
             foreach (var group in _config.Rewards.Select(reward => reward.Group))
                 if (permission.CreateGroup(group, group, 0))
                     Puts($"Created Oxide group \"{group}\".");
 
-            timer.Every(5 * 60,
-                () =>
-                {
-                    if (players.Connected.Any())
-                        _steamcordApiClient.PushSteamIdsOntoQueue(players.Connected.Select(player => player.Id));
-                });
+            if (_config.UpdateSteamGroups)
+                timer.Every(5 * 60,
+                    () =>
+                    {
+                        if (players.Connected.Any())
+                            ApiClient.PushSteamIdsOntoQueue(players.Connected.Select(player => player.Id));
+                    });
         }
 
         private void Unload()
@@ -151,7 +153,9 @@ namespace Oxide.Plugins
         {
             public ApiOptions Api { get; set; }
             public string ChatCommand { get; set; }
+            public bool ChatCommandEnabled { get; set; }
             public IEnumerable<Reward> Rewards { get; set; }
+            public bool UpdateSteamGroups { get; set; }
 
             public static Configuration CreateDefault()
             {
@@ -163,6 +167,7 @@ namespace Oxide.Plugins
                         BaseUri = "https://steamcord.io/api"
                     },
                     ChatCommand = "claim",
+                    ChatCommandEnabled = true,
                     Rewards = new[]
                     {
                         new Reward(new[]
@@ -171,7 +176,8 @@ namespace Oxide.Plugins
                             Requirement.SteamGroupMember
                         }, "discord-steam-member"),
                         new Reward(Requirement.DiscordGuildBooster, "discord-booster")
-                    }
+                    },
+                    UpdateSteamGroups = true
                 };
             }
 
