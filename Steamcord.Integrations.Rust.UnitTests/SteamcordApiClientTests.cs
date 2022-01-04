@@ -54,10 +54,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
             Assert.AreEqual(status == 200, successCalled);
             Assert.AreEqual(status != 200, errorCalled);
 
-            if (status != 200)
-            {
-                _logger.ReceivedWithAnyArgs().LogError(default);
-            }
+            if (status != 200) _logger.ReceivedWithAnyArgs().LogError(default);
         }
 
         [Test]
