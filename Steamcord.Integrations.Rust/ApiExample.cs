@@ -1,4 +1,5 @@
 // Requires: Steamcord
+// Copyright 2021 Steamcord LLC
 
 namespace Oxide.Plugins
 {
