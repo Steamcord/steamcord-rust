@@ -77,6 +77,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="ApiExample.cs"/>
         <Compile Include="Steamcord.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
     </ItemGroup>
