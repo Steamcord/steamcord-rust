@@ -24,7 +24,6 @@ namespace Oxide.Plugins
         private readonly ILangService _langService;
 
         private Configuration _config;
-        private IRewardsService _rewardsService;
 
         public Steamcord()
         {
@@ -77,13 +76,40 @@ namespace Oxide.Plugins
 
         private class HttpRequestQueue : IHttpRequestQueue
         {
+            private readonly ILogger _logger;
+
+            public HttpRequestQueue(ILogger logger)
+            {
+                _logger = logger;
+            }
+
             public void PushRequest(string uri, Action<int, string> callback, string body = null,
                 Dictionary<string, string> headers = null,
                 HttpRequestType type = HttpRequestType.Get)
             {
                 _instance.webrequest.Enqueue(uri, body,
-                    (status, responseBody) => callback?.Invoke(status, responseBody), _instance, GetRequestMethod(type),
+                    (status, responseBody) =>
+                    {
+                        if (status != 200 && status != 204) _logger.LogError(GetErrorMessage(status));
+
+                        callback?.Invoke(status, responseBody);
+                    }, _instance, GetRequestMethod(type),
                     headers);
+            }
+
+            private static string GetErrorMessage(int status)
+            {
+                switch (status)
+                {
+                    case 401:
+                        return "Received an unauthorized response, check your API token.";
+                    case 403:
+                        return "Received a forbidden response, check your subscription status.";
+                    case 429:
+                        return "Received a rate limit response.";
+                    default:
+                        return $"Received unexpected status {status}.";
+                }
             }
 
             private static RequestMethod GetRequestMethod(HttpRequestType requestType)
@@ -271,18 +297,17 @@ namespace Oxide.Plugins.SteamcordApi
         private readonly string _baseUri;
         private readonly Dictionary<string, string> _headers;
         private readonly IHttpRequestQueue _httpRequestQueue;
-        private readonly ILogger _logger;
 
-        public SteamcordApiClient(string apiToken, string baseUri, IHttpRequestQueue httpRequestQueue, ILogger logger)
+        public SteamcordApiClient(string apiToken, string baseUri, IHttpRequestQueue httpRequestQueue)
         {
             _headers = new Dictionary<string, string>
             {
-                ["Authorization"] = $"Bearer {apiToken}"
+                ["Authorization"] = $"Bearer {apiToken}",
+                ["Content-Type"] = "application/json"
             };
 
             _baseUri = baseUri;
             _httpRequestQueue = httpRequestQueue;
-            _logger = logger;
         }
 
         public void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
@@ -293,7 +318,6 @@ namespace Oxide.Plugins.SteamcordApi
                 if (status != 200)
                 {
                     error?.Invoke(status, body);
-                    _logger.LogError(GetErrorMessage(status));
                     return;
                 }
 
@@ -306,23 +330,8 @@ namespace Oxide.Plugins.SteamcordApi
         {
             if (!steamIds.Any()) throw new ArgumentException();
 
-            _httpRequestQueue.PushRequest($"{_baseUri}/steam-id-queue", body: JsonConvert.SerializeObject(steamIds),
+            _httpRequestQueue.PushRequest($"{_baseUri}/steam-groups/queue", body: JsonConvert.SerializeObject(steamIds),
                 headers: _headers, type: HttpRequestType.Post);
-        }
-
-        private string GetErrorMessage(int status)
-        {
-            switch (status)
-            {
-                case 401:
-                    return "Received an unauthorized response, check your API token.";
-                case 403:
-                    return "Received a forbidden response, check your subscription status.";
-                case 429:
-                    return "Received a rate limit response.";
-                default:
-                    return $"Received unexpected status {status}.";
-            }
         }
     }
 }

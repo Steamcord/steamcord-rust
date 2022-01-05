@@ -17,9 +17,8 @@ namespace Steamcord.Integrations.Rust.UnitTests
         public void SetUp()
         {
             _httpRequestQueue = Substitute.For<IHttpRequestQueue>();
-            _logger = Substitute.For<ILogger>();
 
-            _steamcordApiClient = new SteamcordApiClient(ApiToken, BaseUri, _httpRequestQueue, _logger);
+            _steamcordApiClient = new SteamcordApiClient(ApiToken, BaseUri, _httpRequestQueue);
         }
 
         private const string ApiToken = "apiToken";
@@ -53,8 +52,6 @@ namespace Steamcord.Integrations.Rust.UnitTests
 
             Assert.AreEqual(status == 200, successCalled);
             Assert.AreEqual(status != 200, errorCalled);
-
-            if (status != 200) _logger.ReceivedWithAnyArgs().LogError(default);
         }
 
         [Test]
