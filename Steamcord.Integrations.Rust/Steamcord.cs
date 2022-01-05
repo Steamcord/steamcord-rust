@@ -32,14 +32,15 @@ namespace Oxide.Plugins
             _langService = new LangService();
         }
 
-        public ISteamcordApiClient ApiClient { get; private set; }
+        public IRewardsService RewardsService { get; set; }
+        public ISteamcordApiClient ApiClient { get; set; }
 
         private void Init()
         {
-            _rewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
+            RewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
 
             ApiClient =
-                new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(), new Logger());
+                new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(new Logger()));
 
             if (_config.ChatCommandEnabled)
                 AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
@@ -66,7 +67,7 @@ namespace Oxide.Plugins
         private bool ClaimCommand(IPlayer player)
         {
             ApiClient.GetPlayerBySteamId(player.Id,
-                steamcordPlayer => { _rewardsService.ProvisionRewards(player, steamcordPlayer); },
+                steamcordPlayer => { RewardsService.ProvisionRewards(player, steamcordPlayer); },
                 (status, _) => { _langService.Message(player, Message.Error); });
 
             return true;
