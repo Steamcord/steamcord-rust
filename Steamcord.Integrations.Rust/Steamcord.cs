@@ -232,7 +232,7 @@ namespace Oxide.Plugins
                 {
                     [SteamcordLang.Message.Error] = "Something went wrong, please try again later.",
                     [SteamcordLang.Message.ClaimNoRewards] =
-                        "We couldn't find a matching player, link your accounts at [#6200ee]steamcord.link/your-slug[/#].",
+                        "We couldn't find a matching player, link your accounts at [#9d46ff]steamcord.link/your-slug[/#].",
                     [SteamcordLang.Message.ClaimRewards] = "Thank you for linking your accounts!"
                 }, _instance);
             }
