@@ -191,7 +191,7 @@ namespace Oxide.Plugins
                     Api = new ApiOptions
                     {
                         Token = "<your api token>",
-                        BaseUri = "https://steamcord.io/api"
+                        BaseUri = "https://api.steamcord.io"
                     },
                     ChatCommand = "claim",
                     ChatCommandEnabled = true,
