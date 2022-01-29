@@ -277,7 +277,7 @@ namespace Oxide.Plugins.SteamcordApi
     {
         /// <summary>
         ///     Gets the player from the Steamcord API and invokes one of the provided callbacks.
-        ///     See <see href="https://steamcord.io/docs/api-reference/players-resource.html#get-all-players">the docs</see>.
+        ///     See <see href="https://docs.steamcord.io/api-reference/players-resource.html#get-all-players">the docs</see>.
         /// </summary>
         /// <param name="steamId"></param>
         /// <param name="success"></param>
@@ -286,7 +286,7 @@ namespace Oxide.Plugins.SteamcordApi
             Action<int, string> error = null);
 
         /// <summary>
-        ///     See <see href="https://steamcord.io/docs/api-reference/steam-group-queue.html#push-a-steam-id">the docs</see>.
+        ///     See <see href="https://docs.steamcord.io/api-reference/steam-group-queue.html#push-a-steam-id">the docs</see>.
         /// </summary>
         /// <param name="steamIds"></param>
         void PushSteamIdsOntoQueue(IEnumerable<string> steamIds);
