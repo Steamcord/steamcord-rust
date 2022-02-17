@@ -48,7 +48,10 @@ namespace Oxide.Plugins
             foreach (var group in _config.Rewards.Select(reward => reward.Group))
                 if (permission.CreateGroup(group, group, 0))
                     Puts($"Created Oxide group \"{group}\".");
+        }
 
+        private void OnServerInitialized()
+        {
             if (_config.UpdateSteamGroups)
                 timer.Every(5 * 60,
                     () =>
@@ -331,7 +334,8 @@ namespace Oxide.Plugins.SteamcordApi
         {
             if (!steamIds.Any()) throw new ArgumentException();
 
-            _httpRequestQueue.EnqueueRequest($"{_baseUri}/steam-groups/queue", body: JsonConvert.SerializeObject(steamIds),
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/steam-groups/queue",
+                body: JsonConvert.SerializeObject(steamIds),
                 headers: _headers, type: HttpRequestType.Post);
         }
     }
