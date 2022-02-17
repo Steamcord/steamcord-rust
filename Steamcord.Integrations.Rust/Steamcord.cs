@@ -54,7 +54,7 @@ namespace Oxide.Plugins
                     () =>
                     {
                         if (players.Connected.Any())
-                            ApiClient.PushSteamIdsOntoQueue(players.Connected.Select(player => player.Id));
+                            ApiClient.EnqueueSteamIds(players.Connected.Select(player => player.Id));
                     });
         }
 
@@ -84,7 +84,7 @@ namespace Oxide.Plugins
                 _logger = logger;
             }
 
-            public void PushRequest(string uri, Action<int, string> callback, string body = null,
+            public void EnqueueRequest(string uri, Action<int, string> callback, string body = null,
                 Dictionary<string, string> headers = null,
                 HttpRequestType type = HttpRequestType.Get)
             {
@@ -287,10 +287,10 @@ namespace Oxide.Plugins.SteamcordApi
             Action<int, string> error = null);
 
         /// <summary>
-        ///     See <see href="https://docs.steamcord.io/api-reference/steam-group-queue.html#push-a-steam-id">the docs</see>.
+        ///     See <see href="https://docs.steamcord.io/api-reference/steam-group-queue.html#enqueue-steam-ids">the docs</see>.
         /// </summary>
         /// <param name="steamIds"></param>
-        void PushSteamIdsOntoQueue(IEnumerable<string> steamIds);
+        void EnqueueSteamIds(IEnumerable<string> steamIds);
     }
 
     public class SteamcordApiClient : ISteamcordApiClient
@@ -314,7 +314,7 @@ namespace Oxide.Plugins.SteamcordApi
         public void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
             Action<int, string> error = null)
         {
-            _httpRequestQueue.PushRequest($"{_baseUri}/players?steamId={steamId}", (status, body) =>
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/players?steamId={steamId}", (status, body) =>
             {
                 if (status != 200)
                 {
@@ -327,11 +327,11 @@ namespace Oxide.Plugins.SteamcordApi
             }, headers: _headers);
         }
 
-        public void PushSteamIdsOntoQueue(IEnumerable<string> steamIds)
+        public void EnqueueSteamIds(IEnumerable<string> steamIds)
         {
             if (!steamIds.Any()) throw new ArgumentException();
 
-            _httpRequestQueue.PushRequest($"{_baseUri}/steam-groups/queue", body: JsonConvert.SerializeObject(steamIds),
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/steam-groups/queue", body: JsonConvert.SerializeObject(steamIds),
                 headers: _headers, type: HttpRequestType.Post);
         }
     }
@@ -347,7 +347,7 @@ namespace Oxide.Plugins.SteamcordHttp
 
     public interface IHttpRequestQueue
     {
-        void PushRequest(string uri, Action<int, string> callback = null, string body = null,
+        void EnqueueRequest(string uri, Action<int, string> callback = null, string body = null,
             Dictionary<string, string> headers = null, HttpRequestType type = HttpRequestType.Get);
     }
 }
