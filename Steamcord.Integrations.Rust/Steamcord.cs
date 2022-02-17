@@ -152,7 +152,7 @@ namespace Oxide.Plugins
         {
             public void LogError(string message)
             {
-                Interface.Oxide.LogError(message);
+                Interface.Oxide.LogError($"[{nameof(Steamcord)}] {message}");
             }
         }
 
