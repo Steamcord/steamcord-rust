@@ -41,8 +41,9 @@ namespace Oxide.Plugins
             ApiClient =
                 new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(new Logger()));
 
-            if (_config.ChatCommandEnabled)
-                AddUniversalCommand(_config.ChatCommand, nameof(ClaimCommand));
+            if (_config.ChatCommandsEnabled)
+                foreach (var chatCommand in _config.ChatCommands)
+                    AddUniversalCommand(chatCommand, nameof(ClaimCommand));
 
             foreach (var group in _config.Rewards.Select(reward => reward.Group))
                 if (permission.CreateGroup(group, group, 0))
@@ -179,8 +180,8 @@ namespace Oxide.Plugins
         private class Configuration
         {
             public ApiOptions Api { get; set; }
-            public string ChatCommand { get; set; }
-            public bool ChatCommandEnabled { get; set; }
+            public IEnumerable<string> ChatCommands { get; set; }
+            public bool ChatCommandsEnabled { get; set; }
             public IEnumerable<Reward> Rewards { get; set; }
             public bool UpdateSteamGroups { get; set; }
 
@@ -193,8 +194,8 @@ namespace Oxide.Plugins
                         Token = "<your api token>",
                         BaseUri = "https://api.steamcord.io"
                     },
-                    ChatCommand = "claim",
-                    ChatCommandEnabled = true,
+                    ChatCommands = new[] {"claim"},
+                    ChatCommandsEnabled = true,
                     Rewards = new[]
                     {
                         new Reward(new[]
