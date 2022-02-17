@@ -38,7 +38,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         [TestCase(500)]
         public void GetPlayerBySteamId_WhenApiReturnsOk_InvokesSuccessCallback(int status)
         {
-            _httpRequestQueue.WhenForAnyArgs(x => x.PushRequest(default))
+            _httpRequestQueue.WhenForAnyArgs(x => x.EnqueueRequest(default))
                 .Do(x =>
                 {
                     var callback = x.Arg<Action<int, string>>();
@@ -57,7 +57,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         [Test]
         public void GetPlayers_WhenApiReturnsOnePlayer_RaisesPlayerReceivedEventWithPlayer()
         {
-            _httpRequestQueue.WhenForAnyArgs(x => x.PushRequest(default))
+            _httpRequestQueue.WhenForAnyArgs(x => x.EnqueueRequest(default))
                 .Do(x =>
                 {
                     var callback = x.Arg<Action<int, string>>();
@@ -77,7 +77,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         public void PushSteamIdsOntoQueue_WhenSteamIdsIsEmpty_ThrowsArgumentException()
         {
             Assert.Throws<ArgumentException>(() =>
-                _steamcordApiClient.PushSteamIdsOntoQueue(Array.Empty<string>()));
+                _steamcordApiClient.EnqueueSteamIds(Array.Empty<string>()));
         }
     }
 }
