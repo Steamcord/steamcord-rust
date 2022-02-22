@@ -53,7 +53,8 @@ namespace Oxide.Plugins
         private void OnServerInitialized()
         {
             if (_config.UpdateSteamGroups)
-                timer.Every(5 * 60,
+                // Do not change this interval. The Steam group queue is rate limited aggressively.
+                timer.Every(15 * 60,
                     () =>
                     {
                         if (players.Connected.Any())
@@ -88,8 +89,7 @@ namespace Oxide.Plugins
             }
 
             public void EnqueueRequest(string uri, Action<int, string> callback, string body = null,
-                Dictionary<string, string> headers = null,
-                HttpRequestType type = HttpRequestType.Get)
+                Dictionary<string, string> headers = null, HttpRequestType type = HttpRequestType.Get)
             {
                 _instance.webrequest.Enqueue(uri, body,
                     (status, responseBody) =>
