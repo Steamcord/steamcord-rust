@@ -51,6 +51,15 @@ namespace Steamcord.Integrations.Rust.UnitTests
             _rewardsService.ProvisionRewards(_player, null);
             _langService.Received().Message(_player, Message.ClaimNoRewards);
         }
+        
+        [Test]
+        public void ProvisionRewards_WhenScPlayerIsNull_RemovesFromGroups()
+        {
+            _rewardsService.ProvisionRewards(_player, null);
+            
+            _permissionsService.Received().RemoveFromGroup(_player, DiscordSteamMemberGroup);
+            _permissionsService.Received().RemoveFromGroup(_player, DiscordBoosterGroup);
+        }
 
         [Test]
         public void ProvisionRewards_WhenPlayerIsEligibleForOneReward_AddsToGroupsAndMessagesPlayer()

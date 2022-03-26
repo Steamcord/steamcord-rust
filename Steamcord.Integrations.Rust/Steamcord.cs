@@ -449,6 +449,10 @@ namespace Oxide.Plugins.SteamcordRewards
             if (steamcordPlayer == null)
             {
                 _langService.Message(player, Message.ClaimNoRewards);
+                
+                foreach (var reward in _rewards)    
+                    _permissionsService.RemoveFromGroup(player, reward.Group);
+                
                 return;
             }
 
