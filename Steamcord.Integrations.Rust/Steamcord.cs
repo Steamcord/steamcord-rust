@@ -172,7 +172,7 @@ namespace Oxide.Plugins
 
         protected override void LoadDefaultConfig()
         {
-            _config = Configuration.CreateDefault();
+            _config = new Configuration();
         }
 
         protected override void SaveConfig()
@@ -182,35 +182,26 @@ namespace Oxide.Plugins
 
         private class Configuration
         {
-            public ApiOptions Api { get; set; }
-            public IEnumerable<string> ChatCommands { get; set; }
-            public bool ChatCommandsEnabled { get; set; }
-            public IEnumerable<Reward> Rewards { get; set; }
-            public bool UpdateSteamGroups { get; set; }
-
-            public static Configuration CreateDefault()
+            public ApiOptions Api { get; set; } = new ApiOptions
             {
-                return new Configuration
+                Token = "<your api token>",
+                BaseUri = "https://api.steamcord.io"
+            };
+
+            public IEnumerable<string> ChatCommands { get; set; } = new[] {"claim"};
+            public bool ChatCommandsEnabled { get; set; } = true;
+
+            public IEnumerable<Reward> Rewards { get; set; } = new[]
+            {
+                new Reward(new[]
                 {
-                    Api = new ApiOptions
-                    {
-                        Token = "<your api token>",
-                        BaseUri = "https://api.steamcord.io"
-                    },
-                    ChatCommands = new[] {"claim"},
-                    ChatCommandsEnabled = true,
-                    Rewards = new[]
-                    {
-                        new Reward(new[]
-                        {
-                            Requirement.DiscordGuildMember,
-                            Requirement.SteamGroupMember
-                        }, "discord-steam-member"),
-                        new Reward(Requirement.DiscordGuildBooster, "discord-booster")
-                    },
-                    UpdateSteamGroups = true
-                };
-            }
+                    Requirement.DiscordGuildMember,
+                    Requirement.SteamGroupMember
+                }, "discord-steam-member"),
+                new Reward(Requirement.DiscordGuildBooster, "discord-booster")
+            };
+
+            public bool UpdateSteamGroups { get; set; } = true;
 
             public class ApiOptions
             {
@@ -449,10 +440,10 @@ namespace Oxide.Plugins.SteamcordRewards
             if (steamcordPlayer == null)
             {
                 _langService.Message(player, Message.ClaimNoRewards);
-                
-                foreach (var reward in _rewards)    
+
+                foreach (var reward in _rewards)
                     _permissionsService.RemoveFromGroup(player, reward.Group);
-                
+
                 return;
             }
 
