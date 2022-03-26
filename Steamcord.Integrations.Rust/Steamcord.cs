@@ -43,11 +43,14 @@ namespace Oxide.Plugins
 
             if (_config.ChatCommandsEnabled)
                 foreach (var chatCommand in _config.ChatCommands)
-                    AddUniversalCommand(chatCommand, nameof(ClaimCommand));
+                    AddUniversalCommand(chatCommand, nameof(ProvisionReward));
 
             foreach (var group in _config.Rewards.Select(reward => reward.Group))
                 if (permission.CreateGroup(group, group, 0))
                     Puts($"Created Oxide group \"{group}\".");
+
+            if (!_config.ProvisionRewardsOnJoin)
+                Unsubscribe(nameof(OnUserConnected));
         }
 
         private void OnServerInitialized()
@@ -62,13 +65,18 @@ namespace Oxide.Plugins
                     });
         }
 
+        private void OnUserConnected(IPlayer player)
+        {
+            ProvisionReward(player);
+        }
+
         private void Unload()
         {
             // Oxide/uMod requirement
             _instance = null;
         }
 
-        private bool ClaimCommand(IPlayer player)
+        private bool ProvisionReward(IPlayer player)
         {
             ApiClient.GetPlayerBySteamId(player.Id,
                 steamcordPlayer => { RewardsService.ProvisionRewards(player, steamcordPlayer); },
@@ -190,6 +198,7 @@ namespace Oxide.Plugins
 
             public IEnumerable<string> ChatCommands { get; set; } = new[] {"claim"};
             public bool ChatCommandsEnabled { get; set; } = true;
+            public bool ProvisionRewardsOnJoin { get; set; } = true;
 
             public IEnumerable<Reward> Rewards { get; set; } = new[]
             {
