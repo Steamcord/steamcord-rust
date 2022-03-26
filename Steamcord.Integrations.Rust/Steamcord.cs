@@ -41,6 +41,15 @@ namespace Oxide.Plugins
             ApiClient =
                 new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(new Logger()));
 
+            ApiClient.GetLatestVersion(version =>
+            {
+                if (version > new Version(Version.ToString()))
+                {
+                    Puts($@"A newer version ({version}) of this plugin is available!
+Download it at https://steamcord.io/dashboard/downloads");
+                }
+            });
+            
             if (_config.ChatCommandsEnabled)
                 foreach (var chatCommand in _config.ChatCommands)
                     AddUniversalCommand(chatCommand, nameof(ProvisionReward));
@@ -277,8 +286,24 @@ namespace Oxide.Plugins.SteamcordApi
 
     #endregion
 
+    #region Release
+
+    public class Release
+    {
+        public string Repository { get; set; }
+        public string Version { get; set; }
+    }
+
+    #endregion
+
     public interface ISteamcordApiClient
     {
+        /// <summary>
+        /// Gets the latest plugin version from the Steamcord API and invokes the provided callback.
+        /// </summary>
+        /// <param name="callback"></param>
+        void GetLatestVersion(Action<Version> callback);
+
         /// <summary>
         ///     Gets the player from the Steamcord API and invokes one of the provided callbacks.
         ///     See <see href="https://docs.steamcord.io/api-reference/players-resource.html#get-all-players">the docs</see>.
@@ -312,6 +337,21 @@ namespace Oxide.Plugins.SteamcordApi
 
             _baseUri = baseUri;
             _httpRequestQueue = httpRequestQueue;
+        }
+
+        public void GetLatestVersion(Action<Version> callback)
+        {
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/releases/latest", (status, body) =>
+            {
+                if (status != 200) return;
+
+                var releases = JsonConvert.DeserializeObject<Release[]>(body);
+                var rustIntegration = releases.SingleOrDefault(release => release.Repository == "steamcord-rust");
+
+                if (rustIntegration == null) return;
+                
+                callback(new Version(rustIntegration.Version));
+            });
         }
 
         public void GetPlayerBySteamId(string steamId, Action<SteamcordPlayer> success = null,
