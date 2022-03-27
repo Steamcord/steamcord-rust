@@ -17,7 +17,7 @@ using Oxide.Plugins.SteamcordRewards;
 
 namespace Oxide.Plugins
 {
-    [Info("Steamcord", "Steamcord Team", "1.0.0")]
+    [Info("Steamcord", "Steamcord Team", "1.1.0")]
     public class Steamcord : CovalencePlugin
     {
         private static Steamcord _instance;
