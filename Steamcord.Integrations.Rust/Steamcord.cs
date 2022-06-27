@@ -44,12 +44,10 @@ namespace Oxide.Plugins
             ApiClient.GetLatestVersion(version =>
             {
                 if (version > new Version(Version.ToString()))
-                {
                     Puts($@"A newer version ({version}) of this plugin is available!
 Download it at https://steamcord.io/dashboard/downloads");
-                }
             });
-            
+
             if (_config.ChatCommandsEnabled)
                 foreach (var chatCommand in _config.ChatCommands)
                     AddUniversalCommand(chatCommand, nameof(ProvisionReward));
@@ -199,17 +197,17 @@ Download it at https://steamcord.io/dashboard/downloads");
 
         private class Configuration
         {
-            public ApiOptions Api { get; set; } = new ApiOptions
+            public ApiOptions Api { get; } = new ApiOptions
             {
                 Token = "<your api token>",
                 BaseUri = "https://api.steamcord.io"
             };
 
-            public IEnumerable<string> ChatCommands { get; set; } = new[] {"claim"};
-            public bool ChatCommandsEnabled { get; set; } = true;
-            public bool ProvisionRewardsOnJoin { get; set; } = true;
+            public IEnumerable<string> ChatCommands { get; } = new[] {"claim"};
+            public bool ChatCommandsEnabled { get; } = true;
+            public bool ProvisionRewardsOnJoin { get; } = true;
 
-            public IEnumerable<Reward> Rewards { get; set; } = new[]
+            public IEnumerable<Reward> Rewards { get; } = new[]
             {
                 new Reward(new[]
                 {
@@ -219,7 +217,7 @@ Download it at https://steamcord.io/dashboard/downloads");
                 new Reward(Requirement.DiscordGuildBooster, "discord-booster")
             };
 
-            public bool UpdateSteamGroups { get; set; } = true;
+            public bool UpdateSteamGroups { get; } = true;
 
             public class ApiOptions
             {
@@ -299,7 +297,7 @@ namespace Oxide.Plugins.SteamcordApi
     public interface ISteamcordApiClient
     {
         /// <summary>
-        /// Gets the latest plugin version from the Steamcord API and invokes the provided callback.
+        ///     Gets the latest plugin version from the Steamcord API and invokes the provided callback.
         /// </summary>
         /// <param name="callback"></param>
         void GetLatestVersion(Action<Version> callback);
@@ -349,7 +347,7 @@ namespace Oxide.Plugins.SteamcordApi
                 var rustIntegration = releases.SingleOrDefault(release => release.Repository == "steamcord-rust");
 
                 if (rustIntegration == null) return;
-                
+
                 callback(new Version(rustIntegration.Version));
             });
         }

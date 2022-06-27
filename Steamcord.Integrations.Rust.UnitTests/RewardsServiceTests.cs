@@ -50,17 +50,17 @@ namespace Steamcord.Integrations.Rust.UnitTests
         {
             // Act
             _rewardsService.ProvisionRewards(_player, null);
-            
+
             // Assert
             _langService.Received().Message(_player, Message.ClaimNoRewards);
         }
-        
+
         [Test]
         public void ProvisionRewards_WhenScPlayerIsNull_RemovesFromGroups()
         {
             // Act
             _rewardsService.ProvisionRewards(_player, null);
-            
+
             // Assert
             _permissionsService.Received().RemoveFromGroup(_player, DiscordSteamMemberGroup);
             _permissionsService.Received().RemoveFromGroup(_player, DiscordBoosterGroup);
@@ -99,7 +99,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
             _permissionsService.Received().AddToGroup(_player, DiscordSteamMemberGroup);
             _permissionsService.DidNotReceive().AddToGroup(_player, DiscordBoosterGroup);
         }
-        
+
         [Test]
         public void ProvisionRewards_WhenPlayerIsEligibleForOneReward_RemovesFromGroup()
         {
@@ -133,7 +133,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
             _permissionsService.Received().RemoveFromGroup(_player, DiscordBoosterGroup);
             _permissionsService.DidNotReceive().RemoveFromGroup(_player, DiscordSteamMemberGroup);
         }
-        
+
         [Test]
         public void ProvisionRewards_WhenPlayerIsEligibleForOneReward_MessagesPlayer()
         {
@@ -201,7 +201,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
             _permissionsService.Received().AddToGroup(_player, DiscordBoosterGroup);
             _permissionsService.DidNotReceiveWithAnyArgs().RemoveFromGroup(default, default);
         }
-        
+
         [Test]
         public void ProvisionRewards_WhenPlayerIsEligibleForAllRewards_MessagesPlayer()
         {

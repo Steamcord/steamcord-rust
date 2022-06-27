@@ -60,12 +60,12 @@
             <HintPath>..\packages\NSubstitute.4.2.2\lib\net46\NSubstitute.dll</HintPath>
             <Private>True</Private>
         </Reference>
-        <Reference Include="Oxide.Core, Version=2.0.3999.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\packages\Oxide.Core.2.0.3999\lib\net48\Oxide.Core.dll</HintPath>
+        <Reference Include="Oxide.Core, Version=2.0.4027.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\Oxide.Core.2.0.4027-develop\lib\net48\Oxide.Core.dll</HintPath>
             <Private>True</Private>
         </Reference>
-        <Reference Include="Oxide.References, Version=2.0.3779.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\packages\Oxide.References.2.0.3779\lib\net48\Oxide.References.dll</HintPath>
+        <Reference Include="Oxide.References, Version=2.0.3781.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\Oxide.References.2.0.3781-develop\lib\net48\Oxide.References.dll</HintPath>
             <Private>True</Private>
         </Reference>
         <Reference Include="System"/>

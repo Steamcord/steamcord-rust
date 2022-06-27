@@ -49,16 +49,16 @@
             <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
             <Private>True</Private>
         </Reference>
-        <Reference Include="Oxide.Core, Version=2.0.3999.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\packages\Oxide.Core.2.0.3999\lib\net48\Oxide.Core.dll</HintPath>
+        <Reference Include="Oxide.Core, Version=2.0.4027.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\Oxide.Core.2.0.4027-develop\lib\net48\Oxide.Core.dll</HintPath>
             <Private>True</Private>
         </Reference>
-        <Reference Include="Oxide.CSharp, Version=2.0.4046.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\packages\Oxide.CSharp.2.0.4046\lib\net48\Oxide.CSharp.dll</HintPath>
+        <Reference Include="Oxide.CSharp, Version=2.0.4051.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\Oxide.CSharp.2.0.4051-develop\lib\net48\Oxide.CSharp.dll</HintPath>
             <Private>True</Private>
         </Reference>
-        <Reference Include="Oxide.References, Version=2.0.3779.0, Culture=neutral, PublicKeyToken=null">
-            <HintPath>..\packages\Oxide.References.2.0.3779\lib\net48\Oxide.References.dll</HintPath>
+        <Reference Include="Oxide.References, Version=2.0.3781.0, Culture=neutral, PublicKeyToken=null">
+            <HintPath>..\packages\Oxide.References.2.0.3781-develop\lib\net48\Oxide.References.dll</HintPath>
             <Private>True</Private>
         </Reference>
         <Reference Include="System"/>
