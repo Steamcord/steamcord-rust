@@ -197,17 +197,17 @@ Download it at https://steamcord.io/dashboard/downloads");
 
         private class Configuration
         {
-            public ApiOptions Api { get; } = new ApiOptions
+            public ApiOptions Api { get; set; } = new ApiOptions
             {
                 Token = "<your api token>",
                 BaseUri = "https://api.steamcord.io"
             };
 
-            public IEnumerable<string> ChatCommands { get; } = new[] {"claim"};
-            public bool ChatCommandsEnabled { get; } = true;
-            public bool ProvisionRewardsOnJoin { get; } = true;
+            public IEnumerable<string> ChatCommands { get; set; } = new[] {"claim"};
+            public bool ChatCommandsEnabled { get; set; } = true;
+            public bool ProvisionRewardsOnJoin { get; set; } = true;
 
-            public IEnumerable<Reward> Rewards { get; } = new[]
+            public IEnumerable<Reward> Rewards { get; set; } = new[]
             {
                 new Reward(new[]
                 {
@@ -217,7 +217,7 @@ Download it at https://steamcord.io/dashboard/downloads");
                 new Reward(Requirement.DiscordGuildBooster, "discord-booster")
             };
 
-            public bool UpdateSteamGroups { get; } = true;
+            public bool UpdateSteamGroups { get; set; } = true;
 
             public class ApiOptions
             {
