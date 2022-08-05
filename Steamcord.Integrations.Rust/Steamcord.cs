@@ -121,13 +121,15 @@ Download it at https://steamcord.io/dashboard/downloads");
                 switch (status)
                 {
                     case 401:
-                        return "Received an unauthorized response, check your API token.";
+                        return "Received an unauthorized response, is your API token correct?";
                     case 403:
-                        return "Received a forbidden response, check your subscription status.";
+                        return "Received a forbidden response, is your subscription active?";
+                    case 404:
+                        return "Received a not found response, is your server ID correct?";
                     case 429:
                         return "Received a rate limit response.";
                     default:
-                        return $"Received unexpected status {status}.";
+                        return $"Received unexpected status code: {status}.";
                 }
             }
 
