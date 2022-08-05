@@ -250,7 +250,8 @@ Download it at https://steamcord.io/dashboard/downloads");
 
             public void Message(IPlayer player, string key)
             {
-                player.Message(_instance.covalence.FormatText(_instance.lang.GetMessage(key, _instance, player.Id)));
+                player.Message(_instance.covalence.FormatText(_instance.lang.GetMessage(key, _instance, player.Id))
+                    .Replace("{Name}", player.Name));
             }
         }
 
