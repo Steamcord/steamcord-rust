@@ -289,6 +289,13 @@ namespace Oxide.Plugins.SteamcordApi
 
     #endregion
 
+    public class DeferredAction
+    {
+        public string DefinitionName { get; set; }
+        public SteamcordPlayer Player { get; set; }
+        public Dictionary<string, string> Arguments { get; set; }
+    }
+
     #region Release
 
     public class Release
