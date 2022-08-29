@@ -329,6 +329,13 @@ namespace Oxide.Plugins.SteamcordApi
         /// </summary>
         /// <param name="steamIds"></param>
         void EnqueueSteamIds(IEnumerable<string> steamIds);
+
+        /// <summary>
+        ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#get-deferred-items">the docs</see>.
+        /// </summary>
+        /// <param name="serverId"></param>
+        /// <param name="callback"></param>
+        void GetDeferredActions(int serverId, Action<IEnumerable<DeferredAction>> callback);
     }
 
     public class SteamcordApiClient : ISteamcordApiClient
@@ -387,6 +394,17 @@ namespace Oxide.Plugins.SteamcordApi
             _httpRequestQueue.EnqueueRequest($"{_baseUri}/steam-groups/queue",
                 body: JsonConvert.SerializeObject(steamIds),
                 headers: _headers, type: HttpRequestType.Post);
+        }
+
+        public void GetDeferredActions(int serverId, Action<IEnumerable<DeferredAction>> callback)
+        {
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/servers/{serverId}/queue", (status, body) =>
+            {
+                if (status != 200) return;
+
+                var actions = JsonConvert.DeserializeObject<DeferredAction[]>(body);
+                callback?.Invoke(actions);
+            });
         }
     }
 }
