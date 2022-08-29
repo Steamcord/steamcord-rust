@@ -219,6 +219,8 @@ Download it at https://steamcord.io/dashboard/downloads");
                 new Reward(Requirement.DiscordGuildBooster, "discord-booster")
             };
 
+            public int? ServerId { get; set; } = null;
+
             public bool UpdateSteamGroups { get; set; } = true;
 
             public class ApiOptions
