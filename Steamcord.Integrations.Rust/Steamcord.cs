@@ -20,6 +20,7 @@ namespace Oxide.Plugins
     [Info("Steamcord", "Steamcord Team", "1.2.0")]
     public class Steamcord : CovalencePlugin
     {
+        private const string BaseUri = "https://api.steamcord.io";
         private static Steamcord _instance;
         private readonly ILangService _langService;
 
@@ -39,7 +40,7 @@ namespace Oxide.Plugins
             RewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
 
             ApiClient =
-                new SteamcordApiClient(_config.Api.Token, _config.Api.BaseUri, new HttpRequestQueue(new Logger()));
+                new SteamcordApiClient(_config.Api.Token, BaseUri, new HttpRequestQueue(new Logger()));
 
             ApiClient.GetLatestVersion(version =>
             {
@@ -201,8 +202,7 @@ Download it at https://steamcord.io/dashboard/downloads");
         {
             public ApiOptions Api { get; set; } = new ApiOptions
             {
-                Token = "<your api token>",
-                BaseUri = "https://api.steamcord.io"
+                Token = "<your api token>"
             };
 
             public IEnumerable<string> ChatCommands { get; set; } = new[] {"claim"};
@@ -226,7 +226,6 @@ Download it at https://steamcord.io/dashboard/downloads");
             public class ApiOptions
             {
                 public string Token { get; set; }
-                public string BaseUri { get; set; }
             }
         }
 
