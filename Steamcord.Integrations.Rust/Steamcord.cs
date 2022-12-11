@@ -1,5 +1,7 @@
 ﻿// Copyright 2022 Steamcord LLC
 
+#define DEBUG
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,10 +39,11 @@ namespace Oxide.Plugins
 
         private void Init()
         {
-            RewardsService = new RewardsService(_langService, new PermissionsService(), _config.Rewards);
-
             ApiClient =
-                new SteamcordApiClient(_config.Api.Token, BaseUri, new HttpRequestQueue(new Logger()));
+                new SteamcordApiClient(_config.Api.Token, BaseUri, _config.ServerId,
+                    new HttpRequestQueue(new Logger()));
+
+            RewardsService = new RewardsService(_langService, new PermissionsService(), ApiClient, _config.Rewards);
 
             ApiClient.GetLatestVersion(version =>
             {
@@ -71,6 +74,17 @@ Download it at https://steamcord.io/dashboard/downloads");
                         if (players.Connected.Any())
                             ApiClient.EnqueueSteamIds(players.Connected.Select(player => player.Id));
                     });
+
+            if (!_config.ServerId.HasValue) return;
+
+            timer.Every(60, () => ApiClient.GetDeferredActions(actions =>
+            {
+                var deferredActions = actions as DeferredAction[] ?? actions.ToArray();
+
+                if (!deferredActions.Any()) return;
+
+                RewardsService.ProvisionDeferredActions(deferredActions);
+            }));
         }
 
         private void OnUserConnected(IPlayer player)
@@ -181,7 +195,7 @@ Download it at https://steamcord.io/dashboard/downloads");
 
             public void RemoveFromGroup(IPlayer player, string group)
             {
-                _instance.permission.RemoveUserGroup(player.Id, group);
+                RemoveFromGroup(player.Id, group);
             }
         }
 
@@ -310,9 +324,11 @@ namespace Oxide.Plugins.SteamcordApi
 
     public class DeferredAction
     {
+        public int Id { get; set; }
         public string DefinitionName { get; set; }
         public SteamcordPlayer Player { get; set; }
         public Dictionary<string, string> Arguments { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 
     #region Release
@@ -352,18 +368,24 @@ namespace Oxide.Plugins.SteamcordApi
         /// <summary>
         ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#get-deferred-items">the docs</see>.
         /// </summary>
-        /// <param name="serverId"></param>
         /// <param name="callback"></param>
-        void GetDeferredActions(int serverId, Action<IEnumerable<DeferredAction>> callback);
+        void GetDeferredActions(Action<IEnumerable<DeferredAction>> callback);
+
+        /// <summary>
+        ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#acknowledge-deferred-items">the docs</see>.
+        /// </summary>
+        /// <param name="actions"></param>
+        void AckDeferredActions(IEnumerable<int> actions);
     }
 
     public class SteamcordApiClient : ISteamcordApiClient
     {
         private readonly string _baseUri;
+        private readonly int? _serverId;
         private readonly Dictionary<string, string> _headers;
         private readonly IHttpRequestQueue _httpRequestQueue;
 
-        public SteamcordApiClient(string apiToken, string baseUri, IHttpRequestQueue httpRequestQueue)
+        public SteamcordApiClient(string apiToken, string baseUri, int? serverId, IHttpRequestQueue httpRequestQueue)
         {
             _headers = new Dictionary<string, string>
             {
@@ -372,6 +394,7 @@ namespace Oxide.Plugins.SteamcordApi
             };
 
             _baseUri = baseUri;
+            _serverId = serverId;
             _httpRequestQueue = httpRequestQueue;
         }
 
@@ -415,15 +438,21 @@ namespace Oxide.Plugins.SteamcordApi
                 headers: _headers, type: HttpRequestType.Post);
         }
 
-        public void GetDeferredActions(int serverId, Action<IEnumerable<DeferredAction>> callback)
+        public void GetDeferredActions(Action<IEnumerable<DeferredAction>> callback)
         {
-            _httpRequestQueue.EnqueueRequest($"{_baseUri}/servers/{serverId}/queue", (status, body) =>
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/servers/{_serverId}/queue", (status, body) =>
             {
                 if (status != 200) return;
 
                 var actions = JsonConvert.DeserializeObject<DeferredAction[]>(body);
                 callback?.Invoke(actions);
             });
+        }
+
+        public void AckDeferredActions(IEnumerable<int> actionIds)
+        {
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/servers/{_serverId}/ack",
+                body: JsonConvert.SerializeObject(actionIds), type: HttpRequestType.Put);
         }
     }
 }
@@ -518,19 +547,22 @@ namespace Oxide.Plugins.SteamcordRewards
     public interface IRewardsService
     {
         void ProvisionRewards(IPlayer player, SteamcordPlayer steamcordPlayer);
+        void ProvisionDeferredActions(IEnumerable<DeferredAction> actions);
     }
 
     public class RewardsService : IRewardsService
     {
         private readonly ILangService _langService;
         private readonly IPermissionsService _permissionsService;
+        private readonly ISteamcordApiClient _apiClient;
         private readonly IEnumerable<Reward> _rewards;
 
         public RewardsService(ILangService langService, IPermissionsService permissionsService,
-            IEnumerable<Reward> rewards)
+            ISteamcordApiClient apiClient, IEnumerable<Reward> rewards)
         {
             _langService = langService;
             _permissionsService = permissionsService;
+            _apiClient = apiClient;
             _rewards = rewards;
         }
 
@@ -559,6 +591,30 @@ namespace Oxide.Plugins.SteamcordRewards
                 }
 
             _langService.Message(player, givenReward ? Message.ClaimRewards : Message.ClaimNoRewards);
+        }
+
+        public void ProvisionDeferredActions(IEnumerable<DeferredAction> actions)
+        {
+            var provisionedActionIds = new HashSet<int>();
+
+            foreach (var action in actions.OrderBy(action => action.CreatedDate))
+            {
+                switch (action.DefinitionName)
+                {
+                    case "addOxideGroup":
+                        foreach (var steamAccount in action.Player.SteamAccounts)
+                            _permissionsService.AddToGroup(steamAccount.SteamId, action.Arguments["groupName"]);
+                        break;
+                    case "removeOxideGroup":
+                        foreach (var steamAccount in action.Player.SteamAccounts)
+                            _permissionsService.RemoveFromGroup(steamAccount.SteamId, action.Arguments["groupName"]);
+                        break;
+                }
+
+                provisionedActionIds.Add(action.Id);
+            }
+
+            _apiClient.AckDeferredActions(provisionedActionIds);
         }
 
         private static bool IsEligibleForAll(SteamcordPlayer player, Reward reward, string steamId)

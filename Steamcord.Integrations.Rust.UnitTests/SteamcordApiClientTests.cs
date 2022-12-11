@@ -18,7 +18,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         {
             _httpRequestQueue = Substitute.For<IHttpRequestQueue>();
 
-            _steamcordApiClient = new SteamcordApiClient(ApiToken, BaseUri, _httpRequestQueue);
+            _steamcordApiClient = new SteamcordApiClient(ApiToken, BaseUri, 1, _httpRequestQueue);
         }
 
         private const string ApiToken = "apiToken";

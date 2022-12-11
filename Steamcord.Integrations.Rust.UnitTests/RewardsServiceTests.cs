@@ -19,6 +19,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
             _langService = Substitute.For<ILangService>();
             _permissionsService = Substitute.For<IPermissionsService>();
             _player = Substitute.For<IPlayer>();
+            _apiClient = Substitute.For<ISteamcordApiClient>();
             _player.Id.Returns("1");
 
             var rewards = new[]
@@ -34,7 +35,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
                 }, DiscordBoosterGroup)
             };
 
-            _rewardsService = new RewardsService(_langService, _permissionsService, rewards);
+            _rewardsService = new RewardsService(_langService, _permissionsService, _apiClient, rewards);
         }
 
         private const string DiscordSteamMemberGroup = "discord-steam-member";
@@ -44,6 +45,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
         private IPermissionsService _permissionsService;
         private IPlayer _player;
         private IRewardsService _rewardsService;
+        private ISteamcordApiClient _apiClient;
 
         [Test]
         public void ProvisionRewards_WhenScPlayerIsNull_MessagesPlayer()
@@ -199,7 +201,7 @@ namespace Steamcord.Integrations.Rust.UnitTests
             // Assert
             _permissionsService.Received().AddToGroup(_player, DiscordSteamMemberGroup);
             _permissionsService.Received().AddToGroup(_player, DiscordBoosterGroup);
-            _permissionsService.DidNotReceiveWithAnyArgs().RemoveFromGroup(default, default);
+            _permissionsService.DidNotReceiveWithAnyArgs().RemoveFromGroup(_player, default);
         }
 
         [Test]
