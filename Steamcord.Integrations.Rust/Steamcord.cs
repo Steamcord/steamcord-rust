@@ -154,9 +154,27 @@ Download it at https://steamcord.io/dashboard/downloads");
 
         private class PermissionsService : IPermissionsService
         {
+            public void AddToGroup(string steamId, string group)
+            {
+                _instance.permission.AddUserGroup(steamId, group);
+
+#if DEBUG
+                _instance.Puts($"Added player \"{steamId}\" to group \"{group}\".");
+#endif
+            }
+
             public void AddToGroup(IPlayer player, string group)
             {
-                _instance.permission.AddUserGroup(player.Id, group);
+                AddToGroup(player.Id, group);
+            }
+
+            public void RemoveFromGroup(string steamId, string group)
+            {
+                _instance.permission.RemoveUserGroup(steamId, group);
+
+#if DEBUG
+                _instance.Puts($"Removed player \"{steamId}\" to group \"{group}\".");
+#endif
             }
 
             public void RemoveFromGroup(IPlayer player, string group)
@@ -451,7 +469,9 @@ namespace Oxide.Plugins.SteamcordPermissions
 {
     public interface IPermissionsService
     {
+        void AddToGroup(string steamId, string group);
         void AddToGroup(IPlayer player, string group);
+        void RemoveFromGroup(string steamId, string group);
         void RemoveFromGroup(IPlayer player, string group);
     }
 }
