@@ -142,6 +142,8 @@ Download it at https://steamcord.io/dashboard/downloads");
                         return RequestMethod.GET;
                     case HttpRequestType.Post:
                         return RequestMethod.POST;
+                    case HttpRequestType.Put:
+                        return RequestMethod.PUT;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(requestType), requestType, null);
                 }
@@ -431,7 +433,8 @@ namespace Oxide.Plugins.SteamcordHttp
     public enum HttpRequestType
     {
         Get,
-        Post
+        Post,
+        Put
     }
 
     public interface IHttpRequestQueue
