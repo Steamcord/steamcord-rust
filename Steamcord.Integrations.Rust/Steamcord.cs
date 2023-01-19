@@ -40,7 +40,7 @@ namespace Oxide.Plugins
         private void Init()
         {
             ApiClient =
-                new SteamcordApiClient(_config.Api.Token, BaseUri, _config.ServerId,
+                new SteamcordApiClient(_config.Api.Token, BaseUri, _config.IntegrationId,
                     new HttpRequestQueue(new Logger()));
 
             RewardsService = new RewardsService(_langService, new PermissionsService(), ApiClient, _config.Rewards);
@@ -75,11 +75,11 @@ Download it at https://steamcord.io/dashboard/downloads");
                             ApiClient.EnqueueSteamIds(players.Connected.Select(player => player.Id));
                     });
 
-            if (!_config.ServerId.HasValue) return;
+            if (!_config.IntegrationId.HasValue) return;
 
             timer.Every(60, () => ApiClient.GetDeferredActions(actions =>
             {
-                var deferredActions = actions as DeferredAction[] ?? actions.ToArray();
+                var deferredActions = actions as SteamcordAction[] ?? actions.ToArray();
 
                 if (!deferredActions.Any()) return;
 
@@ -140,7 +140,7 @@ Download it at https://steamcord.io/dashboard/downloads");
                     case 403:
                         return "Received a forbidden response, is your subscription active?";
                     case 404:
-                        return "Received a not found response, is your server ID correct?";
+                        return "Received a not found response, is your integration ID correct?";
                     case 429:
                         return "Received a rate limit response.";
                     default:
@@ -253,7 +253,7 @@ Download it at https://steamcord.io/dashboard/downloads");
                 new Reward(Requirement.DiscordGuildBooster, "discord-booster")
             };
 
-            public int? ServerId { get; set; } = null;
+            public int? IntegrationId { get; set; } = null;
 
             public bool UpdateSteamGroups { get; set; } = true;
 
@@ -322,7 +322,7 @@ namespace Oxide.Plugins.SteamcordApi
 
     #endregion
 
-    public class DeferredAction
+    public class SteamcordAction
     {
         public int Id { get; set; }
         public string DefinitionName { get; set; }
@@ -366,13 +366,13 @@ namespace Oxide.Plugins.SteamcordApi
         void EnqueueSteamIds(IEnumerable<string> steamIds);
 
         /// <summary>
-        ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#get-deferred-items">the docs</see>.
+        ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#get-deferred-actions">the docs</see>.
         /// </summary>
         /// <param name="callback"></param>
-        void GetDeferredActions(Action<IEnumerable<DeferredAction>> callback);
+        void GetDeferredActions(Action<IEnumerable<SteamcordAction>> callback);
 
         /// <summary>
-        ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#acknowledge-deferred-items">the docs</see>.
+        ///   See <see href="https://docs.steamcord.io/api-reference/action-queue.html#acknowledge-deferred-actions">the docs</see>.
         /// </summary>
         /// <param name="actions"></param>
         void AckDeferredActions(IEnumerable<int> actions);
@@ -381,11 +381,11 @@ namespace Oxide.Plugins.SteamcordApi
     public class SteamcordApiClient : ISteamcordApiClient
     {
         private readonly string _baseUri;
-        private readonly int? _serverId;
+        private readonly int? _integrationId;
         private readonly Dictionary<string, string> _headers;
         private readonly IHttpRequestQueue _httpRequestQueue;
 
-        public SteamcordApiClient(string apiToken, string baseUri, int? serverId, IHttpRequestQueue httpRequestQueue)
+        public SteamcordApiClient(string apiToken, string baseUri, int? integrationId, IHttpRequestQueue httpRequestQueue)
         {
             _headers = new Dictionary<string, string>
             {
@@ -394,7 +394,7 @@ namespace Oxide.Plugins.SteamcordApi
             };
 
             _baseUri = baseUri;
-            _serverId = serverId;
+            _integrationId = integrationId;
             _httpRequestQueue = httpRequestQueue;
         }
 
@@ -438,20 +438,20 @@ namespace Oxide.Plugins.SteamcordApi
                 headers: _headers, type: HttpRequestType.Post);
         }
 
-        public void GetDeferredActions(Action<IEnumerable<DeferredAction>> callback)
+        public void GetDeferredActions(Action<IEnumerable<SteamcordAction>> callback)
         {
-            _httpRequestQueue.EnqueueRequest($"{_baseUri}/servers/{_serverId}/queue", (status, body) =>
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/integrations/{_integrationId}/queue", (status, body) =>
             {
                 if (status != 200) return;
 
-                var actions = JsonConvert.DeserializeObject<DeferredAction[]>(body);
+                var actions = JsonConvert.DeserializeObject<SteamcordAction[]>(body);
                 callback?.Invoke(actions);
             });
         }
 
         public void AckDeferredActions(IEnumerable<int> actionIds)
         {
-            _httpRequestQueue.EnqueueRequest($"{_baseUri}/servers/{_serverId}/ack",
+            _httpRequestQueue.EnqueueRequest($"{_baseUri}/integrations/{_integrationId}/ack",
                 body: JsonConvert.SerializeObject(actionIds), type: HttpRequestType.Put);
         }
     }
@@ -547,7 +547,7 @@ namespace Oxide.Plugins.SteamcordRewards
     public interface IRewardsService
     {
         void ProvisionRewards(IPlayer player, SteamcordPlayer steamcordPlayer);
-        void ProvisionDeferredActions(IEnumerable<DeferredAction> actions);
+        void ProvisionDeferredActions(IEnumerable<SteamcordAction> actions);
     }
 
     public class RewardsService : IRewardsService
@@ -593,7 +593,7 @@ namespace Oxide.Plugins.SteamcordRewards
             _langService.Message(player, givenReward ? Message.ClaimRewards : Message.ClaimNoRewards);
         }
 
-        public void ProvisionDeferredActions(IEnumerable<DeferredAction> actions)
+        public void ProvisionDeferredActions(IEnumerable<SteamcordAction> actions)
         {
             var provisionedActionIds = new HashSet<int>();
 
