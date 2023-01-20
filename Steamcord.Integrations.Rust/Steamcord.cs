@@ -1,6 +1,6 @@
-﻿// Copyright 2022 Steamcord LLC
+﻿// Copyright 2023 Steamcord LLC
 
-#define DEBUG
+// #define DEBUG
 
 using System;
 using System.Collections.Generic;
@@ -189,7 +189,7 @@ Download it at https://steamcord.io/dashboard/downloads");
                 _instance.permission.RemoveUserGroup(steamId, group);
 
 #if DEBUG
-                _instance.Puts($"Removed player \"{steamId}\" to group \"{group}\".");
+                _instance.Puts($"Removed player \"{steamId}\" from group \"{group}\".");
 #endif
             }
 
@@ -446,13 +446,13 @@ namespace Oxide.Plugins.SteamcordApi
 
                 var actions = JsonConvert.DeserializeObject<SteamcordAction[]>(body);
                 callback?.Invoke(actions);
-            });
+            }, headers: _headers);
         }
 
         public void AckDeferredActions(IEnumerable<int> actionIds)
         {
             _httpRequestQueue.EnqueueRequest($"{_baseUri}/integrations/{_integrationId}/ack",
-                body: JsonConvert.SerializeObject(actionIds), type: HttpRequestType.Put);
+                body: JsonConvert.SerializeObject(actionIds), headers: _headers, type: HttpRequestType.Put);
         }
     }
 }
