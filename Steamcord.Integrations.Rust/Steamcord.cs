@@ -16,7 +16,7 @@ using Oxide.Plugins.SteamcordRewards;
 
 namespace Oxide.Plugins
 {
-    [Info("Steamcord", "Steamcord Team", "1.2.0")]
+    [Info("Steamcord", "Steamcord Team", "2.0.0")]
     public class Steamcord : CovalencePlugin
     {
         private const string BaseUri = "https://api.steamcord.io";
